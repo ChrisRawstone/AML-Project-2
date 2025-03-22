@@ -1,0 +1,27 @@
+[build-system]
+# Requires setuptools 61+ for PEP 621 support, and wheel to build wheels.
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "src"                # The published package name (literally "src")
+version = "0.1.0"
+description = "Your package is literally named src"
+readme = "README.md"
+authors = [
+  { name = "Your Name", email = "you@example.com" }
+]
+dependencies = [
+  # Add your runtime dependencies here
+  # e.g. "requests"
+]
+
+[tool.setuptools]
+# We are telling setuptools that there is a package named "src",
+# and that the code for it lives in the ./src directory.
+packages = ["src"]
+package-dir = { "src" = "src" }
+
+# If you have multiple packages or subpackages, you could switch to
+# [tool.setuptools.packages.find] instead, but for a single top-level
+# package named "src", this is enough.
