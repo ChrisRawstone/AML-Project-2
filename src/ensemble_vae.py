@@ -15,6 +15,92 @@ from copy import deepcopy
 import os
 import math
 import matplotlib.pyplot as plt
+import autograd.numpy as np
+from autograd import grad
+
+import matplotlib.pyplot as plt
+
+def plot_latent_geodesic(z_curve, save_path=None):
+    """
+    Plot the geodesic curve in the latent space.
+    
+    Parameters:
+        z_curve (torch.Tensor): Tensor of shape (S+1, latent_dim) containing the geodesic points.
+        save_path (str, optional): If provided, the plot is saved to this path.
+    """
+    # Only plot if the latent dimension is 2.
+    if z_curve.size(1) != 2:
+        print("Latent dimension is not 2; cannot plot in 2D.")
+        return
+    
+    # Convert to numpy for plotting.
+    z_np = z_curve.detach().cpu().numpy()
+    
+    fig, ax = plt.subplots(figsize=(8, 6))
+    
+    # Plot the geodesic curve.
+    ax.plot(z_np[:, 0], z_np[:, 1], 'o-', linewidth=2, markersize=8, label='Geodesic Curve')
+    
+    # Highlight the endpoints.
+    ax.scatter(z_np[0, 0], z_np[0, 1], color='green', s=100, label='Start')
+    ax.scatter(z_np[-1, 0], z_np[-1, 1], color='red', s=100, label='End')
+    
+    ax.set_xlabel('Latent Dimension 1')
+    ax.set_ylabel('Latent Dimension 2')
+    ax.set_title('Geodesic in Latent Space')
+    ax.legend()
+    ax.grid(True)
+    
+    if save_path:
+        plt.savefig(save_path, dpi=300)
+    
+    plt.show()
+
+def compute_geodesic(
+    model,           # VAE model with .decoder(...) -> distribution
+    z_start,         # Tensor of shape (latent_dim,)  -- endpoint A
+    z_end,           # Tensor of shape (latent_dim,)  -- endpoint B
+    num_segments=20, # S: how many line segments -> total of S+1 points
+    lr=1e-2,
+    max_iter=1000    # total LBFGS iterations
+):
+    """
+    Use direct energy minimization (eq. (8.7)) to connect z_start to z_end
+    in the data space induced by the decoder f.
+    
+    Returns a tuple (initial_curve, final_curve) each of shape (S+1, latent_dim).
+    """
+    # Create S+1 latent points and initialize linearly
+    z_vars = torch.linspace(0, 1, num_segments+1).view(-1, 1).to(z_start.device)
+    z_vars = z_start + z_vars * (z_end - z_start)
+    # Save the initial curve for comparison before making it a Parameter.
+    initial_curve = z_vars.clone().detach()
+    z_vars = torch.nn.Parameter(z_vars)
+
+    optimizer = torch.optim.LBFGS(
+        [z_vars],
+        lr=lr,
+        max_iter=max_iter, 
+        history_size=20, 
+        line_search_fn="strong_wolfe"
+    )
+
+    def closure():
+        optimizer.zero_grad()
+        # Clamp endpoints
+        with torch.no_grad():
+            z_vars.data[0].copy_(z_start)
+            z_vars.data[-1].copy_(z_end)
+        decoded = model.decoder(z_vars).mean
+        diff = decoded[1:] - decoded[:-1]
+        energy = (diff**2).view(diff.size(0), -1).sum()
+        print("Current energy: {:.4f}".format(energy.item()))
+        energy.backward()
+        return energy
+
+    optimizer.step(closure)
+    final_curve = z_vars.detach()
+    return initial_curve, final_curve
 
 class GaussianPrior(nn.Module):
     def __init__(self, M):
@@ -439,3 +525,63 @@ if __name__ == "__main__":
         ).to(device)
         model.load_state_dict(torch.load(args.experiment_folder + "/model.pt"))
         model.eval()
+
+        # Encode test data to get latent representations
+        all_latents = []
+        for x, _ in mnist_test_loader:
+            x = x.to(device)
+            with torch.no_grad():
+                q = model.encoder(x)
+                # Use mean of q as latent representation
+                latent = q.mean
+            all_latents.append(latent)
+        all_latents = torch.cat(all_latents, dim=0).cpu()
+
+        # Choose 25 random pairs from encoded latent codes
+        num_pairs = 2
+        indices = torch.randperm(all_latents.shape[0])[:2*num_pairs].reshape(num_pairs, 2)
+        geodesics = []
+        latent_pairs = []
+
+        # For each chosen latent pair:
+        for pair in indices:
+            z0, z1 = all_latents[pair[0]].to(device), all_latents[pair[1]].to(device)
+            latent_pairs.append((z0.cpu().numpy(), z1.cpu().numpy()))
+            initial_curve, final_curve = compute_geodesic(model, z0, z1)
+            # Stack both curves into a tuple for later plotting.
+            geodesics.append((initial_curve.cpu().numpy(), final_curve.cpu().numpy()))
+
+        # Plot latent variables and geodesics.
+        import matplotlib.pyplot as plt
+        plt.figure(figsize=(8, 6))
+        plt.scatter(all_latents[:, 0], all_latents[:, 1], alpha=0.3, label="Latent codes")
+
+        # Plot each geodesic's initial and final curves.
+        for i, (initial, final) in enumerate(geodesics):
+            if i == 0:
+                plt.plot(initial[:, 0], initial[:, 1], 'bo-', lw=2, markersize=4, label="Initial Curve")
+                plt.plot(final[:, 0], final[:, 1], 'ro-', lw=2, markersize=4, label="Optimized Curve")
+            else:
+                plt.plot(initial[:, 0], initial[:, 1], 'bo-', lw=2, markersize=4)
+                plt.plot(final[:, 0], final[:, 1], 'ro-', lw=2, markersize=4)
+
+            # Plot start and end points of the geodesic with larger, distinct markers.
+            # Here we use green stars for start and magenta stars for end.
+            # Ensure we label only the first time to avoid duplicate legend entries.
+            if i == 0:
+                plt.scatter(initial[0, 0], initial[0, 1], c='g', marker='*', s=150, label="Start Point")
+                plt.scatter(initial[-1, 0], initial[-1, 1], c='m', marker='*', s=150, label="End Point")
+            else:
+                plt.scatter(initial[0, 0], initial[0, 1], c='g', marker='*', s=150)
+                plt.scatter(initial[-1, 0], initial[-1, 1], c='m', marker='*', s=150)
+
+
+        plt.title("Latent variables and geodesics between random pairs")
+        plt.xlabel("z1")
+        plt.ylabel("z2")
+        plt.legend()
+        plt.savefig("latent_geodesics.png")
+        plt.show()
+
+
+
