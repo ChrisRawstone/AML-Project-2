@@ -631,7 +631,7 @@ if __name__ == "__main__":
         all_latents = torch.cat(all_latents, dim=0).cpu()
 
         # Choose 25 random pairs from encoded latent codes
-        num_pairs = 5
+        num_pairs = 25
         indices = torch.randperm(all_latents.shape[0])[:2*num_pairs].reshape(num_pairs, 2)
         geodesics = []
         latent_pairs = []
