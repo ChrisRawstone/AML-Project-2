@@ -302,6 +302,29 @@ class VAE(nn.Module):
         return -self.elbo(x)
 
 
+def plot_training_loss(loss_history, title="Training Loss", xlabel="Iteration", ylabel="Loss", save_path=None):
+    """
+    Plot the training loss.
+
+    Parameters:
+        loss_history (list): List of loss values recorded during training.
+        title (str): Plot title.
+        xlabel (str): Label for the x-axis.
+        ylabel (str): Label for the y-axis.
+        save_path (str): If provided, saves the plot to this path.
+    """
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(loss_history, label="Loss")
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title(title)
+    plt.yscale("log")
+    plt.legend()
+    if save_path:
+        plt.savefig(save_path)
+    plt.show()
+
 def train(model, optimizer, data_loader, epochs, device):
     """
     Train a VAE model.
@@ -321,6 +344,7 @@ def train(model, optimizer, data_loader, epochs, device):
 
     num_steps = len(data_loader) * epochs
     epoch = 0
+    loss_history = []
 
     def noise(x, std=0.05):
         eps = std * torch.randn_like(x)
@@ -338,6 +362,9 @@ def train(model, optimizer, data_loader, epochs, device):
                 loss.backward()
                 optimizer.step()
 
+                loss_val = loss.item()
+                loss_history.append(loss_val)
+
                 # Report
                 if step % 5 == 0:
                     loss = loss.detach().cpu()
@@ -352,6 +379,7 @@ def train(model, optimizer, data_loader, epochs, device):
                     f"Stopping training at total epoch {epoch} and current loss: {loss:.1f}"
                 )
                 break
+    return loss_history
 
 
 if __name__ == "__main__":
@@ -399,7 +427,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--epochs-per-decoder",
         type=int,
-        default=50,
+        default=200,
         metavar="N",
         help="number of training epochs per each decoder (default: %(default)s)",
     )
@@ -526,7 +554,7 @@ if __name__ == "__main__":
             GaussianEncoder(new_encoder()),
         ).to(device)
         optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-        train(
+        loss_history = train(
             model,
             optimizer,
             mnist_train_loader,
@@ -534,7 +562,7 @@ if __name__ == "__main__":
             args.device,
         )
         os.makedirs(f"{experiments_folder}", exist_ok=True)
-
+        plot_training_loss(loss_history, save_path="training_loss.png")
         torch.save(
             model.state_dict(),
             f"{experiments_folder}/model.pt",
@@ -603,7 +631,7 @@ if __name__ == "__main__":
         all_latents = torch.cat(all_latents, dim=0).cpu()
 
         # Choose 25 random pairs from encoded latent codes
-        num_pairs = 25
+        num_pairs = 5
         indices = torch.randperm(all_latents.shape[0])[:2*num_pairs].reshape(num_pairs, 2)
         geodesics = []
         latent_pairs = []
