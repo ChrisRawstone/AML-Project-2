@@ -7,31 +7,25 @@ from tqdm import tqdm
 # Pull-back metric geodesic using LBFGS (optimizing only interior points)
 ##############################################################################
 
-def decoder_mean_jacobian(model, z):
+def decoder_jvp(model, z, v):
     """
-    Compute the Jacobian of the decoder's mean output with respect to z.
-    z: torch.Tensor of shape (M,) representing a single latent point.
+    Compute the Jacobian-vector product J_f(z) @ v without computing full Jacobian.
+    z: torch.Tensor of shape (M,)
+    v: torch.Tensor of shape (M,)
     Returns:
-      J: torch.Tensor of shape (D, M), where D is the flattened dimension of f(z).
+      jvp_result: torch.Tensor of shape (D,), the directional derivative.
     """
-    def forward_fn(z_in):
-        # z_in: shape (M,). Reshape to (1, M), decode, then flatten.
-        z_in_2d = z_in.unsqueeze(0)
-        out = model.decoder(z_in_2d).mean  # shape: (1, C, H, W)
-        return out.view(-1)                # shape: (D,)
-    
-    # Build a fresh graph for the Jacobian.
-    z_for_jac = z.detach().clone().requires_grad_(True)
-    J = Fauto.jacobian(forward_fn, z_for_jac, create_graph=True)
-    return J
+    z = z.detach().clone().requires_grad_(True)
+    return Fauto.jvp(lambda z_: model.decoder(z_.unsqueeze(0)).mean.view(-1), (z,), (v,), create_graph=True)[1]
 
 def compute_geodesic_pullback_lbfgs(
     model,
     z_start,
     z_end,
-    num_segments=10,
-    lr=1e-2,
-    outer_steps=100
+    num_segments,
+    lr,
+    outer_steps,
+    optimizer_type="adam"  # Added parameter for optimizer type
 ):
     """
     Compute the geodesic between z_start and z_end under the pull-back metric,
@@ -60,7 +54,13 @@ def compute_geodesic_pullback_lbfgs(
     z_interior_init = z_init_full[1:-1].detach().clone()  # shape (S-1, M)
     z_interior = nn.Parameter(z_interior_init)
 
-    optimizer = torch.optim.LBFGS([z_interior], lr=lr, max_iter=20, history_size=10)
+    if optimizer_type == "lbfgs":
+        optimizer = torch.optim.LBFGS([z_interior], lr=lr, max_iter=20, history_size=20)
+    elif optimizer_type == "adam":
+        optimizer = torch.optim.Adam([z_interior], lr=lr)
+    else:
+        raise ValueError(f"Unsupported optimizer_type: {optimizer_type}")
+    
     energy_history = []
 
     def closure():
@@ -74,13 +74,13 @@ def compute_geodesic_pullback_lbfgs(
 
         cost = 0.0
         # Compute the discrete pull-back energy along the path.
-        for s in tqdm(range(1, num_segments+1)):
+        for s in range(1, num_segments+1):
             z_prev = z_full[s-1]
             z_curr = z_full[s]
             d_z = z_curr - z_prev
             z_mid = 0.5 * (z_curr + z_prev)
-            J = decoder_mean_jacobian(model, z_mid)  # shape (D, M)
-            cost_segment = (J @ d_z).pow(2).sum()
+            jvp_result = decoder_jvp(model, z_mid, d_z)
+            cost_segment = jvp_result.pow(2).sum()
             cost = cost + cost_segment
 
         # Instead of cost.backward(), compute gradients manually.
@@ -91,10 +91,13 @@ def compute_geodesic_pullback_lbfgs(
         return cost
 
     for i in tqdm(range(outer_steps)):
-        loss_val = optimizer.step(closure)  # LBFGS will call closure multiple times internally.
+        if optimizer_type == "lbfgs":
+            loss_val = optimizer.step(closure)
+        else:
+            loss_val = closure()
+            optimizer.step()
         energy_history.append(loss_val.item())
-        if i % 1 == 0:
-            print(f"[LBFGS] Outer step {i:3d}, energy = {loss_val.item():.4f}")
+        print(f"[{optimizer_type.upper()}] Outer step {i:3d}, energy = {loss_val.item():.4f}")
 
     # Reconstruct the final full path.
     with torch.no_grad():

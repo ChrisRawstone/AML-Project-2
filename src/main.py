@@ -21,7 +21,7 @@ def subsample(data, targets, num_data, num_classes):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", type=str, default="train",
+    parser.add_argument("--mode", type=str, default="geodesics",
                         choices=["train", "sample", "eval", "geodesics"],
                         help="Action to perform.")
     parser.add_argument("--experiment-folder", type=str, default="experiment",
@@ -109,7 +109,7 @@ def main():
             z_start, 
             z_end,
             num_segments=args.num_segments,
-            lr=1e-2,
+            lr=1e-3,
             outer_steps=args.steps
         )
         print("LBFGS pull-back geodesic optimization done.")
