@@ -25,7 +25,7 @@ def compute_geodesic_pullback_lbfgs(
     num_segments,
     lr,
     outer_steps,
-    optimizer_type="adam"  # Added parameter for optimizer type
+    optimizer_type="lbfgs"  # Added parameter for optimizer type
 ):
     """
     Compute the geodesic between z_start and z_end under the pull-back metric,
@@ -80,7 +80,8 @@ def compute_geodesic_pullback_lbfgs(
             d_z = z_curr - z_prev
             z_mid = 0.5 * (z_curr + z_prev)
             jvp_result = decoder_jvp(model, z_mid, d_z)
-            cost_segment = jvp_result.pow(2).sum()
+            # Δt = 1/num_segments; multiplying by num_segments scales the cost properly.
+            cost_segment = jvp_result.pow(2).sum() * num_segments
             cost = cost + cost_segment
 
         # Instead of cost.backward(), compute gradients manually.
@@ -107,3 +108,118 @@ def compute_geodesic_pullback_lbfgs(
             z_end.unsqueeze(0)
         ], dim=0)
     return z_full_opt.detach(), energy_history, z_initial
+
+# New helper function to compute pullback metric using full Jacobian
+def decoder_pullback_metric(model, z):
+    """
+    Compute the pullback metric J^T J for a single latent z of shape (M,).
+    Returns a (M, M) matrix.
+    """
+    z_ = z.detach().clone().requires_grad_(True)
+    # We'll flatten the decoded output
+    decoded = model.decoder(z_.unsqueeze(0)).mean.view(-1)
+    # Compute full Jacobian w.r.t. z
+    J = torch.autograd.functional.jacobian(lambda z_in: model.decoder(z_in.unsqueeze(0)).mean.view(-1), z_)
+    # shape of J is (D, M); we want (M, M) by J.T @ J
+    G = J.t() @ J
+    return G.detach()
+
+def metric_norm(G, x):
+    """
+    Compute x^T G x for a vector x in R^M.
+    """
+    return (x.unsqueeze(0) @ G @ x.unsqueeze(-1)).squeeze()
+
+# New class PiecewiseLinearCurve
+class PiecewiseLinearCurve(nn.Module):
+    def __init__(self, z_start, z_end, n_intervals=10, device='cpu'):
+        super().__init__()
+        # We'll store the endpoints as fixed buffers
+        self.register_buffer('z0', z_start.detach().clone())
+        self.register_buffer('z1', z_end.detach().clone())
+        self.n_intervals = n_intervals
+
+        # Create interior points
+        tgrid = torch.linspace(0, 1, n_intervals+1, device=device)
+        # initialize as a small random perturbation around linear interp
+        self.c_free = nn.Parameter(
+            self.z0 + (self.z1 - self.z0) * tgrid[1:-1].unsqueeze(-1) +
+            0.1 * torch.randn_like(self.z0).unsqueeze(0) * torch.norm(self.z1 - self.z0)
+        )
+
+    def c(self):
+        # Return the full sequence of points [z0, c_free..., z1], shape: (n_intervals+1, M)
+        return torch.cat([
+            self.z0.unsqueeze(0),
+            self.c_free,
+            self.z1.unsqueeze(0)
+        ], dim=0)
+
+    def c_dot(self):
+        # discrete difference
+        c_full = self.c()
+        diffs = c_full[1:] - c_full[:-1]
+        return diffs  # shape: (n_intervals, M)
+
+    def forward(self, model):
+        """
+        Compute the discrete energy based on equation 8.7:
+        E = sum_{i=1}^{n_intervals} || f(c_i) - f(c_{i-1}) ||^2,
+        where f is the decoder of the VAE.
+        """
+        c_full = self.c()  # shape: (n_intervals+1, latent_dim)
+        norm2 = 0.0
+        for i in range(1, self.n_intervals + 1):
+            # Decode consecutive points along the curve
+            f_c = model.decoder(c_full[i].unsqueeze(0)).mean
+            f_prev = model.decoder(c_full[i-1].unsqueeze(0)).mean
+            norm2 += torch.sum((f_c - f_prev) ** 2)
+        return norm2
+
+# New function compute_geodesic_piecewise
+def compute_geodesic_piecewise(
+    model,
+    z_start,
+    z_end,
+    num_segments=10,
+    lr=1e-3,
+    outer_steps=50,
+    optimizer_type="lbfgs",
+    device="cpu"
+):
+    """
+    Similar to compute_geodesic_pullback_lbfgs, but uses a piecewise linear approach
+    with a full Jacobian for the pull-back metric. Returns the path plus energy history.
+    """
+    # Build curve module
+    curve = PiecewiseLinearCurve(z_start, z_end, n_intervals=num_segments, device=device).to(device)
+
+    # Choose optimizer
+    if optimizer_type == "lbfgs":
+        optimizer = torch.optim.LBFGS(curve.parameters(), lr=lr, max_iter=20, history_size=20)
+    elif optimizer_type == "adam":
+        optimizer = torch.optim.Adam(curve.parameters(), lr=lr)
+    else:
+        raise ValueError(f"Unsupported optimizer_type: {optimizer_type}")
+
+    energy_history = []
+
+    def closure():
+        optimizer.zero_grad()
+        cost = curve(model)
+        cost.backward()
+        return cost
+
+    for i in range(outer_steps):
+        if optimizer_type == "lbfgs":
+            loss_val = optimizer.step(closure)
+        else:
+            loss_val = closure()
+            optimizer.step()
+        energy_history.append(loss_val.item())
+        print(f"[{optimizer_type.upper()}] Step {i}, energy = {loss_val.item():.4f}")
+
+    # Return the optimized path
+    with torch.no_grad():
+        final_curve = curve.c().detach()
+    return final_curve, energy_history

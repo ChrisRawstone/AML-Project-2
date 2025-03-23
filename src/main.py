@@ -35,7 +35,7 @@ def main():
     parser.add_argument("--latent-dim", type=int, default=2)
     parser.add_argument("--num-segments", type=int, default=10,
                         help="Number of segments in geodesic.")
-    parser.add_argument("--steps", type=int, default=10,
+    parser.add_argument("--steps", type=int, default=5,
                         help="Outer LBFGS iterations.")
     args = parser.parse_args()
 
@@ -95,29 +95,32 @@ def main():
         model.eval()
 
         # Directly choose endpoints on the latent space:
-        z_start = torch.tensor([3.0, 0.0], device=device)
-        z_end   = torch.tensor([-1.0, 2.0], device=device)
+        z_start = torch.tensor([2.0, -1.0], device=device)
+        z_end   = torch.tensor([-1.5, 2.0], device=device)
         
         print("Chosen endpoints:")
         print("z_start:", z_start)
         print("z_end:", z_end)
         print("Distance between endpoints:", (z_start - z_end).norm().item())
 
-        # Compute geodesic with LBFGS (pull-back metric) optimizing only interior points.
-        z_opt, energy_hist, z_init = compute_geodesic_pullback_lbfgs(
+        from geodesics import compute_geodesic_piecewise
+
+        z_opt_piecewise, energy_hist_piecewise = compute_geodesic_piecewise(
             model,
-            z_start, 
+            z_start,
             z_end,
             num_segments=args.num_segments,
             lr=1e-3,
-            outer_steps=args.steps
+            outer_steps=args.steps,
+            optimizer_type="lbfgs",  # or "adam"
+            device=device
         )
         print("LBFGS pull-back geodesic optimization done.")
-        print("Final energy:", energy_hist[-1])
+        # print("Final energy:", energy_hist[-1])
 
         # Decode geodesic for visualization.
         with torch.no_grad():
-            imgs_curve = model.decoder(z_opt).mean  # shape: (S+1, 1, 28, 28)
+            imgs_curve = model.decoder(z_opt_piecewise).mean  # shape: (S+1, 1, 28, 28)
         save_image(imgs_curve, "geodesic_path_pullback_lbfgs.png", nrow=imgs_curve.size(0))
         print("Saved geodesic images as 'geodesic_path_pullback_lbfgs.png'")
 
@@ -135,14 +138,14 @@ def main():
         # Plot comparison: initial (linear) vs. optimized geodesic.
         plot_geodesic_comparison(
             all_latents, all_labels,
-            z_init, z_opt, 
+            z_start, z_opt_piecewise, 
             z_start, z_end,
             save_path="latent_space_geodesic_pullback_lbfgs.png"
         )
         print("Saved latent space geodesic plot: latent_space_geodesic_pullback_lbfgs.png")
 
         # Plot energy curve.
-        plot_energy_curve(energy_hist, save_path="energy_curve_pullback_lbfgs.png")
+        # plot_energy_curve(energy_hist, save_path="energy_curve_pullback_lbfgs.png")
         print("Saved energy curve plot: energy_curve_pullback_lbfgs.png")
 
 if __name__ == "__main__":
