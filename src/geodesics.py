@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.autograd.functional as Fauto
+from tqdm import tqdm
 
 ##############################################################################
 # Pull-back metric geodesic using LBFGS (optimizing only interior points)
@@ -73,7 +74,7 @@ def compute_geodesic_pullback_lbfgs(
 
         cost = 0.0
         # Compute the discrete pull-back energy along the path.
-        for s in range(1, num_segments+1):
+        for s in tqdm(range(1, num_segments+1)):
             z_prev = z_full[s-1]
             z_curr = z_full[s]
             d_z = z_curr - z_prev
@@ -89,7 +90,7 @@ def compute_geodesic_pullback_lbfgs(
         z_interior.grad = grad_val
         return cost
 
-    for i in range(outer_steps):
+    for i in tqdm(range(outer_steps)):
         loss_val = optimizer.step(closure)  # LBFGS will call closure multiple times internally.
         energy_history.append(loss_val.item())
         if i % 1 == 0:

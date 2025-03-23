@@ -21,19 +21,19 @@ def subsample(data, targets, num_data, num_classes):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", type=str, default="geodesics",
+    parser.add_argument("--mode", type=str, default="train",
                         choices=["train", "sample", "eval", "geodesics"],
                         help="Action to perform.")
     parser.add_argument("--experiment-folder", type=str, default="experiment",
                         help="Folder to load/save the model.")
     parser.add_argument("--samples", type=str, default="samples.png",
                         help="File to save samples.")
-    parser.add_argument("--device", type=str, default="cpu",
+    parser.add_argument("--device", type=str, default="cuda",
                         choices=["cpu", "cuda", "mps"], help="Torch device.")
     parser.add_argument("--batch-size", type=int, default=2)
-    parser.add_argument("--epochs-per-decoder", type=int, default=50)
+    parser.add_argument("--epochs-per-decoder", type=int, default=25)
     parser.add_argument("--latent-dim", type=int, default=2)
-    parser.add_argument("--num-segments", type=int, default=5,
+    parser.add_argument("--num-segments", type=int, default=10,
                         help="Number of segments in geodesic.")
     parser.add_argument("--steps", type=int, default=10,
                         help="Outer LBFGS iterations.")
@@ -94,19 +94,11 @@ def main():
         model.load_state_dict(torch.load(f"{args.experiment_folder}/model.pt"))
         model.eval()
 
-        # Get a batch from the test set.
-        data_batch, labels_batch = next(iter(mnist_test_loader))
-        data_batch = data_batch.to(device)
-        z_enc = model.encoder(data_batch).mean  # shape (batch_size, M)
-
-        # Choose endpoints; here, for example, pick points near (0,0) and (-2,6).
-        target_start = torch.tensor([0.0, 0.0], device=device)
-        target_end   = torch.tensor([-2.0, 6.0], device=device)
-        dstart = torch.norm(z_enc - target_start, dim=1)
-        dend   = torch.norm(z_enc - target_end,   dim=1)
-        z_start = z_enc[dstart.argmin()]
-        z_end   = z_enc[dend.argmin()]
-
+        # Directly choose endpoints on the latent space:
+        z_start = torch.tensor([3.0, 0.0], device=device)
+        z_end   = torch.tensor([-1.0, 2.0], device=device)
+        
+        print("Chosen endpoints:")
         print("z_start:", z_start)
         print("z_end:", z_end)
         print("Distance between endpoints:", (z_start - z_end).norm().item())
@@ -129,7 +121,7 @@ def main():
         save_image(imgs_curve, "geodesic_path_pullback_lbfgs.png", nrow=imgs_curve.size(0))
         print("Saved geodesic images as 'geodesic_path_pullback_lbfgs.png'")
 
-        # Gather latent representations from the test set.
+        # Gather latent representations from the test set (for plotting).
         all_latents = []
         all_labels  = []
         with torch.no_grad():
