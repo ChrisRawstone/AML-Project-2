@@ -1,0 +1,16 @@
+Initial energy = 18.1339
+Iteration 10: energy = 17.4610
+Iteration 20: energy = 16.8244
+Iteration 30: energy = 15.9639
+Iteration 40: energy = 15.3940
+Iteration 50: energy = 14.9666
+Iteration 60: energy = 14.7101
+Iteration 70: energy = 14.6967
+Iteration 80: energy = 14.6895
+Iteration 90: energy = 14.6887
+Iteration 100: energy = 14.6883
+Iteration 110: energy = 14.6881
+Iteration 120: energy = 14.6880
+100%|██████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:04<00:00,  4.75s/it]
+Initial geodesic lengths: [18.706729888916016]
+Optimized geodesic lengths: [17.138519287109375]
