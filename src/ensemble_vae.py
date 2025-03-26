@@ -24,6 +24,60 @@ import random
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 
+import matplotlib.pyplot as plt
+import torch
+
+def plot_curve_speed(model, z_curve, ensemble=False, save_path=None):
+    """
+    Computes and plots the speed (Euclidean distance between consecutive decoded outputs)
+    along a latent curve.
+
+    Parameters:
+        model: VAE model (or EnsembleVAE) used to decode latent codes.
+        z_curve (Tensor): Latent curve of shape (S+1, latent_dim).
+        ensemble (bool): If True, use ensemble averaging over decoders.
+        save_path (str, optional): If provided, save the plot to this path.
+
+    Returns:
+        speeds (Tensor): A tensor containing the speed (distance) for each segment.
+    """
+        # Ensure z_curve is a tensor.
+    if not isinstance(z_curve, torch.Tensor):
+        device = next(model.parameters()).device
+        z_curve = torch.from_numpy(z_curve).to(device)
+
+    with torch.no_grad():
+        if ensemble:
+            decoded_points = []
+            # For each latent point, decode using all decoders and average the outputs.
+            for z in z_curve:
+                outputs = [decoder(z.unsqueeze(0)).mean for decoder in model.decoders]
+                avg_output = torch.stack(outputs, dim=0).mean(dim=0)  # shape: (1, channels, height, width)
+                decoded_points.append(avg_output.squeeze(0))
+            decoded = torch.stack(decoded_points)  # shape: (S+1, channels, height, width)
+        else:
+            decoded = model.decoder(z_curve).mean  # shape: (S+1, channels, height, width)
+
+    # Flatten each decoded output.
+    decoded_flat = decoded.view(decoded.size(0), -1)
+    # Compute differences between consecutive decoded outputs.
+    diffs = decoded_flat[1:] - decoded_flat[:-1]
+    # Compute Euclidean (L2) norm for each segment.
+    speeds = torch.norm(diffs, p=2, dim=1)
+
+    # Plot speeds along the curve.
+    plt.figure(figsize=(8, 4))
+    plt.plot(speeds.cpu().numpy(), marker='o', linestyle='-', color='blue')
+    plt.xlabel('Segment Index')
+    plt.ylabel('Speed (Euclidean distance)')
+    plt.title('Speed Along the Geodesic Curve')
+    if save_path:
+        plt.savefig(save_path, dpi=300)
+    plt.show()
+
+    return speeds
+
+
 def plot_latent_geodesics(all_latents, all_labels, geodesics, 
                           title="Latent Variables and Geodesics", 
                           save_path="latent_geodesics.png"):
@@ -41,6 +95,10 @@ def plot_latent_geodesics(all_latents, all_labels, geodesics,
     
     # Plot geodesics
     for i, (initial, final) in enumerate(geodesics):
+        # Ensure the curves are on CPU
+        initial = initial.cpu() if initial.is_cuda else initial
+        final = final.cpu() if final.is_cuda else final
+
         if i == 0:
             plt.plot(initial[:, 0], initial[:, 1], color='blue', linestyle='-', lw=2, label="Initial Curve")
             plt.plot(final[:, 0], final[:, 1], color='red', linestyle='-', lw=2, label="Optimized Curve")
@@ -187,7 +245,6 @@ def compute_model_average_energy(model, z_curve, num_samples=25, decoder_choices
         total_energy += torch.stack(segment_energy_samples).mean()
     return total_energy, decoder_choices
 
-
 def compute_model_average_energy_vectorized(model, z_curve, num_samples=50, decoder_choices=None):
     """
     Compute the model-average curve energy via Monte Carlo sampling in a vectorized fashion.
@@ -238,8 +295,6 @@ def compute_model_average_energy_vectorized(model, z_curve, num_samples=50, deco
         return total_energy, local_decoder_choices
     else:
         return total_energy, None
-
-
 
 def compute_geodesic(
     model,           # VAE model with .decoder(...) -> distribution
@@ -333,7 +388,6 @@ class GaussianPrior(nn.Module):
         """
         return td.Independent(td.Normal(loc=self.mean, scale=self.std), 1)
 
-
 class GaussianEncoder(nn.Module):
     def __init__(self, encoder_net):
         """
@@ -358,7 +412,6 @@ class GaussianEncoder(nn.Module):
         """
         mean, std = torch.chunk(self.encoder_net(x), 2, dim=-1)
         return td.Independent(td.Normal(loc=mean, scale=torch.exp(std)), 1)
-
 
 class GaussianDecoder(nn.Module):
     def __init__(self, decoder_net):
@@ -445,7 +498,6 @@ class EnsembleVAE(nn.Module):
         """
         return -self.elbo(x)
 
-
 class VAE(nn.Module):
     """
     Define a Variational Autoencoder (VAE) model.
@@ -505,7 +557,6 @@ class VAE(nn.Module):
            A tensor of dimension `(batch_size, feature_dim1, feature_dim2)`
         """
         return -self.elbo(x)
-
 
 def plot_training_loss(loss_history, title="Training Loss", xlabel="Iteration", ylabel="Loss", save_path=None):
     """
@@ -586,7 +637,6 @@ def train(model, optimizer, data_loader, epochs, device):
                 break
     return loss_history
 
-
 if __name__ == "__main__":
     from torchvision import datasets, transforms
     from torchvision.utils import save_image
@@ -646,7 +696,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--num-decoders",
         type=int,
-        default=3,
+        default=1,
         metavar="N",
         help="number of decoders in the ensemble (default: %(default)s)",
     )
@@ -884,17 +934,23 @@ if __name__ == "__main__":
             else:
                 initial_curve, final_curve = compute_geodesic(model, z0, z1)
             # Stack both curves into a tuple for later plotting.
-            geodesics.append((initial_curve.cpu().numpy(), final_curve.cpu().numpy()))
+            geodesics.append((initial_curve, final_curve))
 
         initial_lengths = [
-            compute_curve_length(model, torch.from_numpy(curve).to(device), ensemble=ensemble) for curve, _ in geodesics
+            compute_curve_length(model, curve.to(device), ensemble=ensemble) for curve, _ in geodesics
         ]
         final_lengths = [
-            compute_curve_length(model, torch.from_numpy(curve).to(device), ensemble=ensemble) for _, curve in geodesics
+            compute_curve_length(model, curve.to(device), ensemble=ensemble) for _, curve in geodesics
         ]
 
         print("Initial geodesic lengths:", initial_lengths)
         print("Optimized geodesic lengths:", final_lengths)
+
+        # Plot curve speeds for final curves
+        for i, (initial_curve, final_curve) in enumerate(geodesics):
+            print(f"Geodesic {i}")
+            plot_curve_speed(model, initial_curve, ensemble=ensemble, save_path=args.experiment_folder + f"/initial_curve_{i}_speeds.png")
+            plot_curve_speed(model, final_curve, ensemble=ensemble, save_path=args.experiment_folder + f"/final_curve_{i}_speeds.png")
 
         # Plot the latent variables and the geodesics.
         plot_latent_geodesics(all_latents, all_labels, geodesics, save_path=args.experiment_folder + "/latent_geodesics.png")
