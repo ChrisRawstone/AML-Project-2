@@ -70,3 +70,19 @@ def plot_geodesic_comparison(latents, labels, z_initial, z_optimized, z_start, z
     if save_path:
         plt.savefig(save_path, dpi=300)
     plt.show()
+
+def plot_geodesic_speeds(speeds, save_path=None):
+    """
+    Plot the speeds for each segment of the geodesic.
+    """
+    plt.figure(figsize=(8, 4))
+    plt.plot(range(1, len(speeds)+1), speeds, marker='o', linestyle='-', label="Segment speed", color='blue')
+    plt.xlabel("Segment index")
+    plt.ylabel("Speed")
+    plt.title("Speed per Geodesic Segment")
+    plt.grid(True)
+
+    plt.legend(loc="best")
+    if save_path:
+        plt.savefig(save_path, dpi=300)
+    plt.show()

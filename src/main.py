@@ -6,11 +6,12 @@ import argparse
 
 from model import GaussianPrior, GaussianEncoder, GaussianDecoder, VAE, new_encoder, new_decoder
 from train import train
-from geodesics import compute_geodesic_pullback_lbfgs
+from geodesics import compute_geodesic_pullback_lbfgs, compute_segment_speeds
 from plot_utils import (
     plot_energy_curve,
     plot_geodesic_comparison,
-    plot_latent_space
+    plot_latent_space,
+    plot_geodesic_speeds
 )
 
 def subsample(data, targets, num_data, num_classes):
@@ -30,12 +31,12 @@ def main():
                         help="File to save samples.")
     parser.add_argument("--device", type=str, default="cuda",
                         choices=["cpu", "cuda", "mps"], help="Torch device.")
-    parser.add_argument("--batch-size", type=int, default=2)
-    parser.add_argument("--epochs-per-decoder", type=int, default=25)
+    parser.add_argument("--batch-size", type=int, default=4)
+    parser.add_argument("--epochs-per-decoder", type=int, default=50)
     parser.add_argument("--latent-dim", type=int, default=2)
     parser.add_argument("--num-segments", type=int, default=10,
                         help="Number of segments in geodesic.")
-    parser.add_argument("--steps", type=int, default=10,
+    parser.add_argument("--steps", type=int, default=20,
                         help="Outer LBFGS iterations.")
     args = parser.parse_args()
 
@@ -95,8 +96,8 @@ def main():
         model.eval()
 
         # Directly choose endpoints on the latent space:
-        z_start = torch.tensor([3.0, 0.0], device=device)
-        z_end   = torch.tensor([-1.0, 2.0], device=device)
+        z_start = torch.tensor([-2.5, -1.0], device=device)
+        z_end   = torch.tensor([-0.5,-0.5], device=device)
         
         print("Chosen endpoints:")
         print("z_start:", z_start)
@@ -109,8 +110,9 @@ def main():
             z_start, 
             z_end,
             num_segments=args.num_segments,
-            lr=1e-3,
-            outer_steps=args.steps
+            lr=1e-4, # 1e-3
+            outer_steps=args.steps,
+            optimizer_type="lbfgs"
         )
         print("LBFGS pull-back geodesic optimization done.")
         print("Final energy:", energy_hist[-1])
@@ -144,6 +146,11 @@ def main():
         # Plot energy curve.
         plot_energy_curve(energy_hist, save_path="energy_curve_pullback_lbfgs.png")
         print("Saved energy curve plot: energy_curve_pullback_lbfgs.png")
+
+        # Plot geodesic speeds.
+        speeds = compute_segment_speeds(model=model, z_path=z_opt)
+        plot_geodesic_speeds(speeds, save_path="geodesic_speeds_pullback_lbfgs.png")
+        print("Saved geodesic speeds plot: geodesic_speeds_pullback_lbfgs.png")
 
 if __name__ == "__main__":
     main()

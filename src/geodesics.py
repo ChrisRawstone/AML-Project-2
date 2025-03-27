@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.autograd.functional as Fauto
 from tqdm import tqdm
+from time import perf_counter
 
 ##############################################################################
 # Pull-back metric geodesic using LBFGS (optimizing only interior points)
@@ -53,6 +54,7 @@ def compute_geodesic_pullback_lbfgs(
         raise ValueError("num_segments must be >= 2 for interior optimization.")
     z_interior_init = z_init_full[1:-1].detach().clone()  # shape (S-1, M)
     z_interior = nn.Parameter(z_interior_init)
+    # TODO: implement third order parametrization.
 
     if optimizer_type == "lbfgs":
         optimizer = torch.optim.LBFGS([z_interior], lr=lr, max_iter=20, history_size=20)
@@ -82,6 +84,7 @@ def compute_geodesic_pullback_lbfgs(
             jvp_result = decoder_jvp(model, z_mid, d_z)
             cost_segment = jvp_result.pow(2).sum()
             cost = cost + cost_segment
+            # TODO: can add compute of velocity at the same time here.
 
         # Instead of cost.backward(), compute gradients manually.
         grad_val = torch.autograd.grad(cost, z_interior, retain_graph=False, allow_unused=True)[0]
@@ -107,3 +110,24 @@ def compute_geodesic_pullback_lbfgs(
             z_end.unsqueeze(0)
         ], dim=0)
     return z_full_opt.detach(), energy_history, z_initial
+
+def compute_segment_speeds(model, z_path):
+    """
+    Given the optimized geodesic path z_path (of shape (S+1, M)),
+    compute the speed for each segment.
+    
+    Returns:
+      speeds: list of speeds for each segment.
+    """
+    num_segments = z_path.shape[0] - 1
+    speeds = []
+    for s in range(1, num_segments+1):
+        z_prev = z_path[s-1]
+        z_curr = z_path[s]
+        d_z = z_curr - z_prev
+        z_mid = 0.5 * (z_curr + z_prev)
+        # Compute the speed as the norm of the directional derivative
+        jvp_result = decoder_jvp(model, z_mid, d_z)
+        speed = jvp_result.norm().item()
+        speeds.append(speed)
+    return speeds
