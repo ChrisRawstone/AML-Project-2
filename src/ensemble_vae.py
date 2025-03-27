@@ -361,7 +361,8 @@ def compute_geodesic(
 
         return energy
 
-    optimizer.step(closure)
+    for i in range(10):
+        optimizer.step(closure)
 
     # Reconstruct the final curve.
     final_curve = torch.cat([z_start.unsqueeze(0), z_interior.detach(), z_end.unsqueeze(0)], dim=0)
