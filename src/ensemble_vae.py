@@ -77,7 +77,6 @@ def plot_curve_speed(model, z_curve, ensemble=False, save_path=None):
 
     return speeds
 
-
 def plot_latent_geodesics(all_latents, all_labels, geodesics, 
                           title="Latent Variables and Geodesics", 
                           save_path="latent_geodesics.png"):
@@ -210,7 +209,7 @@ def compute_energy(model, z_curve):
     energy = (diff ** 2).view(diff.size(0), -1).sum()
     return energy
 
-def compute_model_average_energy(model, z_curve, num_samples=25, decoder_choices=None):
+def compute_model_average_energy(model, z_curve, num_samples=20, decoder_choices=None):
     """
     Compute the model-average curve energy via Monte Carlo approximation.
     
@@ -261,7 +260,7 @@ def compute_model_average_energy_vectorized(model, z_curve, num_samples=50, deco
         decoder_choices (list or None): If no decoder_choices were provided, returns the newly sampled ones;
                                          otherwise, returns None.
     """
-    S = z_curve.shape[0] - 1  # Number of segments
+    S = z_curve.shape[0] - 1  # Number of curve segments
     M = len(model.decoders)   # Number of decoders
     
     # Precompute decoded outputs for all latent points.
@@ -301,7 +300,7 @@ def compute_geodesic(
     z_start,         # Tensor of shape (latent_dim,)  -- endpoint A
     z_end,           # Tensor of shape (latent_dim,)  -- endpoint B
     num_segments=20, # S: total segments so there are S+1 points
-    lr=0.01,
+    lr=1,
     max_iter=1000,   # total LBFGS iterations
     ensemble=False   # Use ensemble energy
 ):
@@ -355,8 +354,10 @@ def compute_geodesic(
         else:
             energy = compute_energy(model, z_vars)
 
-        print(f"Iteration {counter[0]}: energy = {energy.item():.4f}")
+        if counter[0] % 10 == 0:
+            print(f"Iteration {counter[0]}: energy = {energy.item():.4f}")
         energy.backward()
+
         return energy
 
     optimizer.step(closure)
@@ -597,8 +598,10 @@ def train(model, optimizer, data_loader, epochs, device):
     device: [torch.device]
         The device to use for training.
     """
-
-    num_steps = len(data_loader) * epochs
+    # Decoders are sampled randomly during training
+    # so we need to account for the number of decoders in the total number of steps.
+    num_decoders = len(model.decoders) if hasattr(model, "decoders") else 1
+    num_steps = len(data_loader) * epochs * num_decoders
     epoch = 0
     loss_history = []
 
@@ -710,7 +713,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--num-curves",
         type=int,
-        default=10,
+        default=25,
         metavar="N",
         help="number of geodesics to plot (default: %(default)s)",
     )
@@ -907,21 +910,20 @@ if __name__ == "__main__":
         all_latents = torch.cat(all_latents, dim=0).cpu()
 
         # Choose 25 random pairs from encoded latent codes
-        num_pairs = 25
+        num_pairs = args.num_curves
         # Ensure reproducibility
         torch.manual_seed(42)
         indices = torch.randperm(all_latents.shape[0])[:2*num_pairs].reshape(num_pairs, 2)
-        print("Chosen indices:", indices)
         geodesics = []
         latent_pairs = []
 
-        # Index for class 0 and class 1 in the test set
-        class_0_idx = all_labels == 0
-        class_1_idx = all_labels == 1
+        # # Index for class 0 and class 1 in the test set
+        # class_0_idx = all_labels == 0
+        # class_1_idx = all_labels == 1
 
-        # Choose 1 pair of latent codes from each class
-        indices = [(class_0_idx.nonzero(as_tuple=True)[0][0], class_1_idx.nonzero(as_tuple=True)[
-            0][0])]
+        # # Choose 1 pair of latent codes from each class
+        # indices = [(class_0_idx.nonzero(as_tuple=True)[0][0], class_1_idx.nonzero(as_tuple=True)[
+        #     0][0])]
 
         # For each chosen latent pair:
         for pair in tqdm(indices):
@@ -948,7 +950,6 @@ if __name__ == "__main__":
 
         # Plot curve speeds for final curves
         for i, (initial_curve, final_curve) in enumerate(geodesics):
-            print(f"Geodesic {i}")
             plot_curve_speed(model, initial_curve, ensemble=ensemble, save_path=args.experiment_folder + f"/initial_curve_{i}_speeds.png")
             plot_curve_speed(model, final_curve, ensemble=ensemble, save_path=args.experiment_folder + f"/final_curve_{i}_speeds.png")
 

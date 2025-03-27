@@ -13,8 +13,8 @@ module load cuda/11.8
 
 source /zhome/e3/3/139772/Desktop/AML/aml_new/bin/activate
 
-NUM_RUNS=3
-BASE_DIR="experiments"
+NUM_RUNS=1
+BASE_DIR="experiment"
 mkdir -p "$BASE_DIR"
 
 for i in $(seq 1 $NUM_RUNS); do

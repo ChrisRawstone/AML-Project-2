@@ -1,0 +1,8 @@
+Questions for TA support:
+1. Should we expect to see constant speed geodesics?
+2. What is the correct way of using the decoder ensemble for computing curve lengths?
+    Should we decoder the latent curve with all ensemble members and average their outputs?
+    Or should we sample one of the decoders and only use this?
+3. What's the correct way of training the ensemble VAE's? We recall Søren saying that, for each batch 
+    we should sample a decoder and compute the ELBO w.r.t this and train it in that fashion. 
+

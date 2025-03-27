@@ -1,0 +1,217 @@
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = ../experiment/ensemble_3
+latent_dim = 2
+mode = geodesics
+num_curves = 10
+num_decoders = 3
+num_reruns = 10
+num_t = 20
+samples = samples.png
+Decoder choices sampled.
+Iteration 10: energy = 32.1989
+Iteration 20: energy = 31.8698
+Iteration 30: energy = 31.8595
+Iteration 40: energy = 31.8583
+Decoder choices sampled.
+Iteration 10: energy = 19.4467
+Iteration 20: energy = 19.3269
+Iteration 30: energy = 19.3219
+Iteration 40: energy = 19.3214
+Iteration 50: energy = 19.3214
+Decoder choices sampled.
+Iteration 10: energy = 66.7802
+Iteration 20: energy = 59.9812
+Iteration 30: energy = 59.4897
+Iteration 40: energy = 59.4850
+Decoder choices sampled.
+Iteration 10: energy = 75.0377
+Iteration 20: energy = 65.5561
+Iteration 30: energy = 54.1087
+Iteration 40: energy = 53.6311
+Iteration 50: energy = 53.5730
+Iteration 60: energy = 53.5729
+Decoder choices sampled.
+Iteration 10: energy = 56.1281
+Iteration 20: energy = 55.2404
+Iteration 30: energy = 55.0002
+Iteration 40: energy = 54.9894
+Decoder choices sampled.
+Iteration 10: energy = 22.3996
+Iteration 20: energy = 21.9842
+Iteration 30: energy = 21.7381
+Iteration 40: energy = 21.6906
+Iteration 50: energy = 21.6890
+Decoder choices sampled.
+Iteration 10: energy = 71.0878
+Iteration 20: energy = 69.5278
+Iteration 30: energy = 68.4483
+Iteration 40: energy = 68.3796
+Iteration 50: energy = 68.3758
+Decoder choices sampled.
+Iteration 10: energy = 65.1474
+Iteration 20: energy = 62.2593
+Iteration 30: energy = 61.3507
+Iteration 40: energy = 61.3415
+Iteration 50: energy = 61.3411
+Decoder choices sampled.
+Iteration 10: energy = 71.4172
+Iteration 20: energy = 70.7815
+Iteration 30: energy = 70.6816
+Iteration 40: energy = 70.6689
+Iteration 50: energy = 70.6682
+Decoder choices sampled.
+Iteration 10: energy = 11.1419
+Iteration 20: energy = 11.0185
+Iteration 30: energy = 11.0095
+Iteration 40: energy = 11.0090
+Decoder choices sampled.
+Iteration 10: energy = 8.8922
+Iteration 20: energy = 8.8231
+Iteration 30: energy = 8.8225
+Iteration 40: energy = 8.8225
+Decoder choices sampled.
+Iteration 10: energy = 20.8238
+Iteration 20: energy = 20.6472
+Iteration 30: energy = 20.6194
+Iteration 40: energy = 20.6189
+Iteration 50: energy = 20.6189
+Decoder choices sampled.
+Iteration 10: energy = 57.5182
+Iteration 20: energy = 56.8934
+Iteration 30: energy = 56.8564
+Iteration 40: energy = 56.8534
+Decoder choices sampled.
+Iteration 10: energy = 73.6312
+Iteration 20: energy = 70.0013
+Iteration 30: energy = 69.0539
+Iteration 40: energy = 68.1765
+Iteration 50: energy = 67.8159
+Iteration 60: energy = 67.4359
+Iteration 70: energy = 67.4313
+Decoder choices sampled.
+Iteration 10: energy = 31.1060
+Iteration 20: energy = 30.6094
+Iteration 30: energy = 30.3091
+Iteration 40: energy = 30.2375
+Iteration 50: energy = 30.2331
+Iteration 60: energy = 30.2309
+Iteration 70: energy = 30.2309
+Decoder choices sampled.
+Iteration 10: energy = 21.5079
+Iteration 20: energy = 21.2675
+Iteration 30: energy = 21.2620
+Decoder choices sampled.
+Iteration 10: energy = 17.7250
+Iteration 20: energy = 17.6040
+Iteration 30: energy = 17.5914
+Decoder choices sampled.
+Iteration 10: energy = 60.4074
+Iteration 20: energy = 57.0247
+Iteration 30: energy = 56.1756
+Iteration 40: energy = 56.0289
+Iteration 50: energy = 56.0115
+Iteration 60: energy = 56.0112
+Decoder choices sampled.
+Iteration 10: energy = 34.2467
+Iteration 20: energy = 33.9208
+Iteration 30: energy = 33.8814
+Iteration 40: energy = 33.8762
+Decoder choices sampled.
+Iteration 10: energy = 44.7813
+Iteration 20: energy = 43.4983
+Iteration 30: energy = 43.3100
+Iteration 40: energy = 43.2951
+Iteration 50: energy = 43.2947
+Decoder choices sampled.
+Iteration 10: energy = 76.6874
+Iteration 20: energy = 74.4561
+Iteration 30: energy = 74.0819
+Iteration 40: energy = 74.0378
+Iteration 50: energy = 74.0365
+Decoder choices sampled.
+Iteration 10: energy = 66.1136
+Iteration 20: energy = 61.3835
+Iteration 30: energy = 58.4110
+Iteration 40: energy = 58.1429
+Iteration 50: energy = 58.1059
+Iteration 60: energy = 58.0790
+Iteration 70: energy = 58.0538
+Iteration 80: energy = 58.0535
+Decoder choices sampled.
+Iteration 10: energy = 26.3713
+Iteration 20: energy = 26.2384
+Iteration 30: energy = 26.2283
+Decoder choices sampled.
+Iteration 10: energy = 7.0917
+Iteration 20: energy = 7.0537
+Iteration 30: energy = 7.0517
+Iteration 40: energy = 7.0516
+Decoder choices sampled.
+Iteration 10: energy = 23.1719
+Iteration 20: energy = 23.0269
+Iteration 30: energy = 23.0216
+Iteration 40: energy = 23.0205
+Initial geodesic lengths: [16.40285301208496, 7.169462203979492, 29.066238403320312, 31.263559341430664, 26.38745880126953, 8.036582946777344, 32.16542053222656, 29.06672477722168, 30.964712142944336, 5.951249599456787, 5.762070655822754, 1.6271191835403442, 28.159122467041016, 31.73709487915039, 14.622363090515137, 9.612479209899902, 11.996606826782227, 28.855056762695312, 16.889686584472656, 23.014659881591797, 34.86937713623047, 28.050140380859375, 7.256446838378906, 1.2845818996429443, 10.864980697631836]
+Optimized geodesic lengths: [16.76618194580078, 7.523233413696289, 27.44999122619629, 20.842239379882812, 25.00011444091797, 7.988154888153076, 29.539161682128906, 28.06397819519043, 29.631025314331055, 6.059612274169922, 5.775124549865723, 3.560617446899414, 27.12906265258789, 29.228946685791016, 15.73837947845459, 10.260465621948242, 12.781585693359375, 26.584251403808594, 17.033872604370117, 22.170825958251953, 32.22368240356445, 26.744863510131836, 7.254486083984375, 2.256800889968872, 10.69323444366455]
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@hpc.dtu.dk>
+Subject: Job 24510787: <ensemble> in cluster <dcc> Done
+
+Job <ensemble> was submitted from host <n-62-12-19> by user <s185927> in cluster <dcc> at Thu Mar 27 09:41:46 2025
+Job was executed on host(s) <4*n-62-20-3>, in queue <gpuv100>, as user <s185927> in cluster <dcc> at Thu Mar 27 09:41:47 2025
+</zhome/e3/3/139772> was used as the home directory.
+</zhome/e3/3/139772/Desktop/AML/AML/github-project-2/AML-Project-2/src> was used as the working directory.
+Started at Thu Mar 27 09:41:47 2025
+Terminated at Thu Mar 27 09:44:01 2025
+Results reported at Thu Mar 27 09:44:01 2025
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/bin/bash
+#BSUB -J ensemble
+#BSUB -q gpuv100
+#BSUB -n 4
+#BSUB -gpu "num=1:mode=exclusive_process"
+#BSUB -W 5:00
+#BSUB -R "rusage[mem=5GB]"
+#BSUB -u lassesofus@gmail.com
+#BSUB -o %J.out
+#BSUB -e %J.err
+
+module load cuda/11.8
+
+source /zhome/e3/3/139772/Desktop/AML/aml_new/bin/activate
+
+#python ensemble_vae.py --mode train --device cuda --experiment-folder ../experiment/ensemble_3 --num-decoders 3
+python ensemble_vae.py --mode geodesics --device cuda --experiment-folder ../experiment/ensemble_3 --num-decoders 3
+------------------------------------------------------------
+
+Successfully completed.
+
+Resource usage summary:
+
+    CPU time :                                   116.52 sec.
+    Max Memory :                                 530 MB
+    Average Memory :                             530.00 MB
+    Total Requested Memory :                     20480.00 MB
+    Delta Memory :                               19950.00 MB
+    Max Swap :                                   -
+    Max Processes :                              4
+    Max Threads :                                8
+    Run time :                                   165 sec.
+    Turnaround time :                            135 sec.
+
+The output (if any) is above this job summary.
+
+
+
+PS:
+
+Read file <24510787.err> for stderr output of this job.
+

@@ -1,0 +1,72 @@
+Run : Training model...
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = ../experiment/ensemble_3
+latent_dim = 2
+mode = train
+num_curves = 10
+num_decoders = 3
+num_reruns = 10
+num_t = 20
+samples = samples.png
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@hpc.dtu.dk>
+Subject: Job 24510727: <ensemble> in cluster <dcc> Done
+
+Job <ensemble> was submitted from host <n-62-12-19> by user <s185927> in cluster <dcc> at Thu Mar 27 09:23:29 2025
+Job was executed on host(s) <4*n-62-20-16>, in queue <gpuv100>, as user <s185927> in cluster <dcc> at Thu Mar 27 09:23:31 2025
+</zhome/e3/3/139772> was used as the home directory.
+</zhome/e3/3/139772/Desktop/AML/AML/github-project-2/AML-Project-2/src> was used as the working directory.
+Started at Thu Mar 27 09:23:31 2025
+Terminated at Thu Mar 27 09:27:11 2025
+Results reported at Thu Mar 27 09:27:11 2025
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/bin/bash
+#BSUB -J ensemble
+#BSUB -q gpuv100
+#BSUB -n 4
+#BSUB -gpu "num=1:mode=exclusive_process"
+#BSUB -W 5:00
+#BSUB -R "rusage[mem=5GB]"
+#BSUB -u lassesofus@gmail.com
+#BSUB -o %J.out
+#BSUB -e %J.err
+
+module load cuda/11.8
+
+source /zhome/e3/3/139772/Desktop/AML/aml_new/bin/activate
+
+echo "Run $i: Training model..."
+python ensemble_vae.py --mode train --device cuda --experiment-folder ../experiment/ensemble_3 --num-decoders 3
+------------------------------------------------------------
+
+Successfully completed.
+
+Resource usage summary:
+
+    CPU time :                                   197.01 sec.
+    Max Memory :                                 649 MB
+    Average Memory :                             551.00 MB
+    Total Requested Memory :                     20480.00 MB
+    Delta Memory :                               19831.00 MB
+    Max Swap :                                   -
+    Max Processes :                              4
+    Max Threads :                                9
+    Run time :                                   298 sec.
+    Turnaround time :                            222 sec.
+
+The output (if any) is above this job summary.
+
+
+
+PS:
+
+Read file <24510727.err> for stderr output of this job.
+
