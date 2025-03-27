@@ -1,3 +1,6 @@
+# src/main.py
+# do not remove this comment or the comment above
+
 import os
 import torch
 from torchvision import datasets, transforms
@@ -15,31 +18,16 @@ from plot_utils import (
 
 def subsample(data, targets, num_data, num_classes):
     idx = targets < num_classes
-    new_data = data[idx][:num_data].unsqueeze(1).float()/255.0
+    new_data = data[idx][:num_data].unsqueeze(1).float() / 255.0
     new_targets = targets[idx][:num_data]
     return torch.utils.data.TensorDataset(new_data, new_targets)
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", type=str, default="geodesics",
-                        choices=["train", "sample", "eval", "geodesics"],
-                        help="Action to perform.")
-    parser.add_argument("--experiment-folder", type=str, default="experiment",
-                        help="Folder to load/save the model.")
-    parser.add_argument("--samples", type=str, default="samples.png",
-                        help="File to save samples.")
-    parser.add_argument("--device", type=str, default="cuda",
-                        choices=["cpu", "cuda", "mps"], help="Torch device.")
-    parser.add_argument("--batch-size", type=int, default=2)
-    parser.add_argument("--epochs-per-decoder", type=int, default=25)
-    parser.add_argument("--latent-dim", type=int, default=2)
-    parser.add_argument("--num-segments", type=int, default=10,
-                        help="Number of segments in geodesic.")
-    parser.add_argument("--steps", type=int, default=5,
-                        help="Outer LBFGS iterations.")
-    args = parser.parse_args()
+    from config import get_config, set_seed
+    args, config = get_config()
+    set_seed()
 
-    device = torch.device(args.device)
+    device = torch.device(config["general"]["device"])
     
     # Prepare Data
     num_train_data = 2048
@@ -47,7 +35,7 @@ def main():
     train_raw = datasets.MNIST("data/", train=True, download=True, transform=transforms.ToTensor())
     test_raw  = datasets.MNIST("data/", train=False, download=True, transform=transforms.ToTensor())
     train_data = subsample(train_raw.data, train_raw.targets, num_train_data, num_classes)
-    test_data  = subsample(test_raw.data,  test_raw.targets,  num_train_data, num_classes)
+    test_data  = subsample(test_raw.data, test_raw.targets, num_train_data, num_classes)
     mnist_train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=True)
     mnist_test_loader  = torch.utils.data.DataLoader(test_data, batch_size=args.batch_size, shuffle=False)
 
@@ -58,20 +46,20 @@ def main():
     dec_net = new_decoder(M)
     encoder = GaussianEncoder(enc_net)
     decoder = GaussianDecoder(dec_net)
-    model   = VAE(prior, decoder, encoder).to(device)
+    model = VAE(prior, decoder, encoder).to(device)
 
-    if args.mode == "train":
+    if config["mode"] == "train":
         os.makedirs(args.experiment_folder, exist_ok=True)
         optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
         train(model, optimizer, mnist_train_loader, args.epochs_per_decoder, device)
         torch.save(model.state_dict(), f"{args.experiment_folder}/model.pt")
 
-    elif args.mode == "sample":
-        model.load_state_dict(torch.load(f"{args.experiment_folder}/model.pt"))
+    elif config["mode"] == "sample":
+        model.load_state_dict(torch.load(f"{config['general']['experiment_folder']}/model.pt"))
         model.eval()
         with torch.no_grad():
             samples = model.sample(64).cpu()
-            save_image(samples.view(64,1,28,28), args.samples)
+            save_image(samples.view(64, 1, 28, 28), args.samples)
             data, _ = next(iter(mnist_test_loader))
             data = data.to(device)
             recon_mean = model.decoder(model.encoder(data).mean).mean
@@ -79,8 +67,8 @@ def main():
             save_image(out, "recon_means.png", nrow=data.size(0))
             print("Saved samples and reconstructions.")
 
-    elif args.mode == "eval":
-        model.load_state_dict(torch.load(f"{args.experiment_folder}/model.pt"))
+    elif config["mode"] == "eval":
+        model.load_state_dict(torch.load(f"{config['general']['experiment_folder']}/model.pt"))
         model.eval()
         elbos = []
         with torch.no_grad():
@@ -90,37 +78,38 @@ def main():
         mean_elbo = torch.stack(elbos).mean()
         print("Mean test ELBO =", mean_elbo.item())
 
-    elif args.mode == "geodesics":
-        model.load_state_dict(torch.load(f"{args.experiment_folder}/model.pt"))
+    elif config["mode"] == "geodesics":
+        model.load_state_dict(torch.load(f"{config['general']['experiment_folder']}/model.pt", weights_only=True))
         model.eval()
 
-        # Directly choose endpoints on the latent space:
-        z_start = torch.tensor([2.0, -1.0], device=device)
-        z_end   = torch.tensor([-1.5, 2.0], device=device)
+        # Directly choose endpoints from config.
+        z_start = torch.tensor(config["geodesics"]["z_start"], device=device)
+        z_end   = torch.tensor(config["geodesics"]["z_end"], device=device)
         
         print("Chosen endpoints:")
         print("z_start:", z_start)
         print("z_end:", z_end)
         print("Distance between endpoints:", (z_start - z_end).norm().item())
 
-        from geodesics import compute_geodesic_piecewise
-
-        z_opt_piecewise, energy_hist_piecewise = compute_geodesic_piecewise(
+        # Compute the pull-back geodesic.
+        z_opt, energy_hist, z_initial, final_energy = compute_geodesic_pullback_lbfgs(
             model,
             z_start,
             z_end,
             num_segments=args.num_segments,
-            lr=1e-3,
-            outer_steps=args.steps,
-            optimizer_type="lbfgs",  # or "adam"
-            device=device
+            lr=args.lr,                 # from config or pass a small LR
+            outer_steps=args.steps,     # e.g. 5 or 20
+            optimizer_type=args.optimizer_type,
+            line_search_fn=config["geodesics"]["line_search"],
+            device=device,
+            debug=False  # enable extra debug prints
         )
-        print("LBFGS pull-back geodesic optimization done.")
-        # print("Final energy:", energy_hist[-1])
+        print("Pull-back geodesic optimization done.")
+        print(f"Final Energy (computed): {final_energy:.6f}")
 
-        # Decode geodesic for visualization.
+        # Decode the geodesic for visualization.
         with torch.no_grad():
-            imgs_curve = model.decoder(z_opt_piecewise).mean  # shape: (S+1, 1, 28, 28)
+            imgs_curve = model.decoder(z_opt).mean  # shape: (S+1, 1, 28, 28)
         save_image(imgs_curve, "geodesic_path_pullback_lbfgs.png", nrow=imgs_curve.size(0))
         print("Saved geodesic images as 'geodesic_path_pullback_lbfgs.png'")
 
@@ -138,13 +127,12 @@ def main():
         # Plot comparison: initial (linear) vs. optimized geodesic.
         plot_geodesic_comparison(
             all_latents, all_labels,
-            z_start, z_opt_piecewise, 
+            z_initial, z_opt, 
             z_start, z_end,
             save_path="latent_space_geodesic_pullback_lbfgs.png"
         )
         print("Saved latent space geodesic plot: latent_space_geodesic_pullback_lbfgs.png")
-
-        # Plot energy curve.
+        # Optionally, you can also plot the energy curve using plot_energy_curve.
         # plot_energy_curve(energy_hist, save_path="energy_curve_pullback_lbfgs.png")
         print("Saved energy curve plot: energy_curve_pullback_lbfgs.png")
 
