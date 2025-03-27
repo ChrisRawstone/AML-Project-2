@@ -204,9 +204,10 @@ def compute_energy(model, z_curve):
     Returns:
         energy (Tensor): The computed energy (scalar) that supports gradients.
     """
+    dt = 1.0 / (z_curve.shape[0] - 1)
     decoded = model.decoder(z_curve).mean  
     diff = decoded[1:] - decoded[:-1]
-    energy = (diff ** 2).view(diff.size(0), -1).sum()
+    energy = (diff ** 2).view(diff.size(0), -1).sum() / dt
     return energy
 
 def compute_model_average_energy(model, z_curve, num_samples=20, decoder_choices=None):
@@ -300,7 +301,7 @@ def compute_geodesic(
     z_start,         # Tensor of shape (latent_dim,)  -- endpoint A
     z_end,           # Tensor of shape (latent_dim,)  -- endpoint B
     num_segments=20, # S: total segments so there are S+1 points
-    lr=1,
+    lr=0.01,
     max_iter=1000,   # total LBFGS iterations
     ensemble=False   # Use ensemble energy
 ):
@@ -917,13 +918,13 @@ if __name__ == "__main__":
         geodesics = []
         latent_pairs = []
 
-        # # Index for class 0 and class 1 in the test set
-        # class_0_idx = all_labels == 0
-        # class_1_idx = all_labels == 1
+        # Index for class 0 and class 1 in the test set
+        class_0_idx = all_labels == 0
+        class_1_idx = all_labels == 1
 
-        # # Choose 1 pair of latent codes from each class
-        # indices = [(class_0_idx.nonzero(as_tuple=True)[0][0], class_1_idx.nonzero(as_tuple=True)[
-        #     0][0])]
+        # Choose 1 pair of latent codes from each class
+        indices = [(class_0_idx.nonzero(as_tuple=True)[0][0], class_1_idx.nonzero(as_tuple=True)[
+            0][0])]
 
         # For each chosen latent pair:
         for pair in tqdm(indices):
