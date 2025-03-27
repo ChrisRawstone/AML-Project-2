@@ -296,6 +296,8 @@ def compute_model_average_energy_vectorized(model, z_curve, num_samples=50, deco
     else:
         return total_energy, None
 
+
+
 def compute_geodesic(
     model,           # VAE model with .decoder(...) -> distribution
     z_start,         # Tensor of shape (latent_dim,)  -- endpoint A
@@ -361,8 +363,9 @@ def compute_geodesic(
 
         return energy
 
-    for i in range(10):
-        optimizer.step(closure)
+    # for i in range(10):
+    #     print(f"Outer iteration {i+1}")
+    optimizer.step(closure)
 
     # Reconstruct the final curve.
     final_curve = torch.cat([z_start.unsqueeze(0), z_interior.detach(), z_end.unsqueeze(0)], dim=0)
@@ -726,11 +729,33 @@ if __name__ == "__main__":
         metavar="N",
         help="number of points along the curve (default: %(default)s)",
     )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="random seed (default: random)",
+    )
+    parser.add_argument(
+        "--num_train_data",
+        type=int,
+        default=4048,
+        help="random seed (default: random)",
+    )
+
+
 
     args = parser.parse_args()
     print("# Options")
     for key, value in sorted(vars(args).items()):
         print(key, "=", value)
+    
+    # After parsing
+    if args.seed is not None:
+        torch.manual_seed(args.seed)
+        random.seed(args.seed)
+        np.random.seed(args.seed)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
 
     device = args.device
 
@@ -742,7 +767,7 @@ if __name__ == "__main__":
 
         return torch.utils.data.TensorDataset(new_data, new_targets)
 
-    num_train_data = 2048
+    num_train_data = 
     num_classes = 3
     train_tensors = datasets.MNIST(
         "data/",
