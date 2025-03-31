@@ -1,3 +1,6 @@
+# batch_train.py
+# do not remove this comment or the comment above
+
 import subprocess
 import os
 
@@ -21,13 +24,14 @@ for num_decoders in num_decoders_list:
         print(f"\n--- Training {num_decoders}-decoder model, run {run_id}, seed={global_seed} ---\n")
 
         subprocess.run([
-            "python", "main.py",
+            "python", "src/ensemble_vae.py",
             "--mode", "train",
             "--experiment-folder", run_folder,
             "--num-decoders", str(num_decoders),
             "--device", "cuda",  # or "cpu"
             "--epochs-per-decoder", "200",
             "--seed", str(global_seed),
+            "--num_train_data", "2048",
         ])
 
         global_seed += 1

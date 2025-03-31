@@ -1,10 +1,5 @@
-# Code for DTU course 02460 (Advanced Machine Learning Spring) by Jes Frellsen, 2024
-# Version 1.0 (2024-01-27)
-# Inspiration is taken from:
-# - https://github.com/jmtomczak/intro_dgm/blob/main/vaes/vae_example.ipynb
-# - https://github.com/kampta/pytorch-distributions/blob/master/gaussian_vae.py
-#
-# Significant extension by Søren Hauberg, 2024
+# emsemble_vae.py
+# do not remove this comment or the comment above
 
 import torch
 import torch.nn as nn
@@ -645,6 +640,37 @@ def train(model, optimizer, data_loader, epochs, device):
                 break
     return loss_history
 
+
+def new_encoder(M):
+    encoder_net = nn.Sequential(
+        nn.Conv2d(1, 16, 3, stride=2, padding=1),
+        nn.Softmax(),
+        nn.BatchNorm2d(16),
+        nn.Conv2d(16, 32, 3, stride=2, padding=1),
+        nn.Softmax(),
+        nn.BatchNorm2d(32),
+        nn.Conv2d(32, 32, 3, stride=2, padding=1),
+        nn.Flatten(),
+        nn.Linear(512, 2 * M),
+    )
+    return encoder_net
+
+def new_decoder(M):
+    decoder_net = nn.Sequential(
+        nn.Linear(M, 512),
+        nn.Unflatten(-1, (32, 4, 4)),
+        nn.Softmax(),
+        nn.BatchNorm2d(32),
+        nn.ConvTranspose2d(32, 32, 3, stride=2, padding=1, output_padding=0),
+        nn.Softmax(),
+        nn.BatchNorm2d(32),
+        nn.ConvTranspose2d(32, 16, 3, stride=2, padding=1, output_padding=1),
+        nn.Softmax(),
+        nn.BatchNorm2d(16),
+        nn.ConvTranspose2d(16, 1, 3, stride=2, padding=1, output_padding=1),
+    )
+    return decoder_net
+
 if __name__ == "__main__":
     from torchvision import datasets, transforms
     from torchvision.utils import save_image
@@ -656,7 +682,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--mode",
         type=str,
-        default="sample",
+        default="train",
         choices=["train", "sample", "eval", "geodesics"],
         help="what to do when running the script (default: %(default)s)",
     )
@@ -732,13 +758,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--seed",
         type=int,
-        default=None,
+        default=42,
         help="random seed (default: random)",
     )
     parser.add_argument(
         "--num_train_data",
         type=int,
-        default=4048,
+        default=2048,
         help="random seed (default: random)",
     )
 
@@ -767,7 +793,7 @@ if __name__ == "__main__":
 
         return torch.utils.data.TensorDataset(new_data, new_targets)
 
-    num_train_data = 
+    num_train_data = args.num_train_data
     num_classes = 3
     train_tensors = datasets.MNIST(
         "data/",
@@ -798,35 +824,7 @@ if __name__ == "__main__":
     # Define prior distribution
     M = args.latent_dim
 
-    def new_encoder():
-        encoder_net = nn.Sequential(
-            nn.Conv2d(1, 16, 3, stride=2, padding=1),
-            nn.Softmax(),
-            nn.BatchNorm2d(16),
-            nn.Conv2d(16, 32, 3, stride=2, padding=1),
-            nn.Softmax(),
-            nn.BatchNorm2d(32),
-            nn.Conv2d(32, 32, 3, stride=2, padding=1),
-            nn.Flatten(),
-            nn.Linear(512, 2 * M),
-        )
-        return encoder_net
 
-    def new_decoder():
-        decoder_net = nn.Sequential(
-            nn.Linear(M, 512),
-            nn.Unflatten(-1, (32, 4, 4)),
-            nn.Softmax(),
-            nn.BatchNorm2d(32),
-            nn.ConvTranspose2d(32, 32, 3, stride=2, padding=1, output_padding=0),
-            nn.Softmax(),
-            nn.BatchNorm2d(32),
-            nn.ConvTranspose2d(32, 16, 3, stride=2, padding=1, output_padding=1),
-            nn.Softmax(),
-            nn.BatchNorm2d(16),
-            nn.ConvTranspose2d(16, 1, 3, stride=2, padding=1, output_padding=1),
-        )
-        return decoder_net
 
     # Choose mode to run
     if args.mode == "train":
@@ -859,7 +857,7 @@ if __name__ == "__main__":
             args.device,
         )
         os.makedirs(f"{experiments_folder}", exist_ok=True)
-        plot_training_loss(loss_history, save_path="training_loss.png")
+        plot_training_loss(loss_history, save_path=experiments_folder+"/training_loss.png")
         torch.save(
             model.state_dict(),
             f"{experiments_folder}/model.pt",
@@ -939,19 +937,11 @@ if __name__ == "__main__":
         # Choose 25 random pairs from encoded latent codes
         num_pairs = args.num_curves
         # Ensure reproducibility
-        torch.manual_seed(42)
         indices = torch.randperm(all_latents.shape[0])[:2*num_pairs].reshape(num_pairs, 2)
         geodesics = []
         latent_pairs = []
 
-        # Index for class 0 and class 1 in the test set
-        class_0_idx = all_labels == 0
-        class_1_idx = all_labels == 1
-
-        # Choose 1 pair of latent codes from each class
-        indices = [(class_0_idx.nonzero(as_tuple=True)[0][0], class_1_idx.nonzero(as_tuple=True)[
-            0][0])]
-
+        
         # For each chosen latent pair:
         for pair in tqdm(indices):
             z0, z1 = all_latents[pair[0]].to(device), all_latents[pair[1]].to(device)

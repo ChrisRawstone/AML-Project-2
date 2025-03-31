@@ -1,0 +1,3 @@
+Loaded module: cuda/11.8
+/zhome/61/c/156510/.lsbatch/1743090265.24512474.shell: line 17: /venv/bin/activate: No such file or directory
+python: can't open file '/work3/s204148/AML-Project-2/batch_train.py': [Errno 2] No such file or directory
