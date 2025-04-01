@@ -910,7 +910,7 @@ if __name__ == "__main__":
         all_labels = torch.cat(all_labels, dim=0).cpu()
         all_latents = torch.cat(all_latents, dim=0).cpu()
 
-        # Choose 25 random pairs from encoded latent codes
+        # Choose random pairs from encoded latent codes
         num_pairs = args.num_curves
         # Ensure reproducibility
         torch.manual_seed(42)
