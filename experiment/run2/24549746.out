@@ -1,0 +1,115 @@
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = ../experiment/run2
+latent_dim = 2
+mode = geodesics
+num_curves = 1
+num_decoders = 1
+num_reruns = 10
+num_t = 50
+samples = samples.png
+Iteration 10: energy = 964.3519
+Iteration 20: energy = 956.5806
+Iteration 30: energy = 949.6223
+Iteration 40: energy = 947.1414
+Iteration 50: energy = 941.2632
+Iteration 60: energy = 939.3907
+Iteration 70: energy = 934.7712
+Iteration 80: energy = 932.4678
+Iteration 90: energy = 928.4076
+Iteration 100: energy = 926.3956
+Iteration 110: energy = 925.5876
+Iteration 120: energy = 923.6105
+Iteration 130: energy = 922.6727
+Iteration 140: energy = 921.2128
+Iteration 150: energy = 920.5217
+Iteration 160: energy = 919.5548
+Iteration 170: energy = 919.0153
+Iteration 180: energy = 918.4565
+Iteration 190: energy = 918.1578
+Iteration 200: energy = 917.8150
+Iteration 210: energy = 917.5115
+Iteration 220: energy = 917.1926
+Iteration 230: energy = 917.0249
+Iteration 240: energy = 916.8579
+Iteration 250: energy = 916.7096
+Iteration 260: energy = 916.3486
+Iteration 270: energy = 916.0778
+Iteration 280: energy = 915.5922
+Iteration 290: energy = 915.0150
+Iteration 300: energy = 914.7951
+Iteration 310: energy = 914.4989
+Iteration 320: energy = 914.4626
+Iteration 330: energy = 914.3904
+Iteration 340: energy = 914.2626
+Iteration 350: energy = 914.2010
+Iteration 360: energy = 914.0364
+Iteration 370: energy = 913.8475
+Iteration 380: energy = 913.8322
+Iteration 390: energy = 913.7670
+Iteration 400: energy = 913.7156
+Iteration 410: energy = 913.6912
+Iteration 420: energy = 913.6491
+Initial geodesic lengths: [30.62473487854004]
+Optimized geodesic lengths: [30.226058959960938]
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@hpc.dtu.dk>
+Subject: Job 24549746: <geodesics_run2> in cluster <dcc> Done
+
+Job <geodesics_run2> was submitted from host <n-62-12-19> by user <s185927> in cluster <dcc> at Tue Apr  1 10:28:39 2025
+Job was executed on host(s) <4*n-62-11-14>, in queue <gpuv100>, as user <s185927> in cluster <dcc> at Tue Apr  1 10:33:31 2025
+</zhome/e3/3/139772> was used as the home directory.
+</zhome/e3/3/139772/Desktop/AML/AML/github-project-2/AML-Project-2/src> was used as the working directory.
+Started at Tue Apr  1 10:33:31 2025
+Terminated at Tue Apr  1 10:33:48 2025
+Results reported at Tue Apr  1 10:33:48 2025
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/bin/bash
+#BSUB -J geodesics_run2
+#BSUB -q gpuv100
+#BSUB -n 4
+#BSUB -gpu "num=1:mode=exclusive_process"
+#BSUB -W 5:00
+#BSUB -R "rusage[mem=5GB]"
+#BSUB -u lassesofus@gmail.com
+#BSUB -o %J.out
+#BSUB -e %J.err
+
+module load cuda/11.8
+
+source /zhome/e3/3/139772/Desktop/AML/aml_new/bin/activate
+
+#python ensemble_vae.py --mode train --device cuda --experiment-folder ../experiment/ensemble_3_v2 --num-decoders 3 --num-t 50
+python ensemble_vae.py --mode geodesics --device cuda --experiment-folder ../experiment/run2 --num-decoders 1 --num-t 50 --num-curves 1
+------------------------------------------------------------
+
+Successfully completed.
+
+Resource usage summary:
+
+    CPU time :                                   13.57 sec.
+    Max Memory :                                 648 MB
+    Average Memory :                             648.00 MB
+    Total Requested Memory :                     20480.00 MB
+    Delta Memory :                               19832.00 MB
+    Max Swap :                                   -
+    Max Processes :                              4
+    Max Threads :                                9
+    Run time :                                   17 sec.
+    Turnaround time :                            309 sec.
+
+The output (if any) is above this job summary.
+
+
+
+PS:
+
+Read file <24549746.err> for stderr output of this job.
+

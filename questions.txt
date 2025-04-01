@@ -8,5 +8,6 @@ Questions for TA support:
 4. What are good measures of gauging geodesic behavior?
 5. Can we expect the minimized energies to equal the squared curve lengths? 
     Currently, we observe that we get energies way below our squared curve lengths
+6. How should we interpret latent variable pairs?
 
 

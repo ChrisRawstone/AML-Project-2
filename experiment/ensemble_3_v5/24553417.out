@@ -1,0 +1,132 @@
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = ../experiment/ensemble_3_v5
+latent_dim = 2
+mode = geodesics
+num_curves = 1
+num_decoders = 3
+num_reruns = 10
+num_t = 50
+samples = samples.png
+Iteration 10: energy = 2196.0759
+Iteration 20: energy = 2170.9973
+Iteration 30: energy = 2144.0298
+Iteration 40: energy = 2131.9663
+Iteration 50: energy = 2119.0974
+Iteration 60: energy = 2095.5002
+Iteration 70: energy = 2083.9299
+Iteration 80: energy = 2066.1155
+Iteration 90: energy = 2045.3450
+Iteration 100: energy = 2030.4583
+Iteration 110: energy = 2012.7930
+Iteration 120: energy = 2001.7916
+Iteration 130: energy = 1995.1846
+Iteration 140: energy = 1977.5837
+Iteration 150: energy = 1971.1927
+Iteration 160: energy = 1966.8132
+Iteration 170: energy = 1960.7094
+Iteration 180: energy = 1955.9777
+Iteration 190: energy = 1947.1516
+Iteration 200: energy = 1938.7808
+Iteration 210: energy = 1927.6256
+Iteration 220: energy = 1920.2324
+Iteration 230: energy = 1904.4882
+Iteration 240: energy = 1897.9025
+Iteration 250: energy = 1888.0490
+Iteration 260: energy = 1879.4779
+Iteration 270: energy = 1867.3975
+Iteration 280: energy = 1861.6316
+Iteration 290: energy = 1849.6854
+Iteration 300: energy = 1840.0868
+Iteration 310: energy = 1832.4500
+Iteration 320: energy = 1823.9902
+Iteration 330: energy = 1815.9596
+Iteration 340: energy = 1801.3956
+Iteration 350: energy = 1797.2344
+Iteration 360: energy = 1789.3074
+Iteration 370: energy = 1785.1434
+Iteration 380: energy = 1782.7952
+Iteration 390: energy = 1779.3271
+Iteration 400: energy = 1777.8792
+Iteration 410: energy = 1775.5787
+Iteration 420: energy = 1775.3931
+Iteration 430: energy = 1774.2775
+Iteration 440: energy = 1773.4556
+Iteration 450: energy = 1772.9111
+Iteration 460: energy = 1772.4637
+Iteration 470: energy = 1772.1327
+Iteration 480: energy = 1771.8710
+Iteration 490: energy = 1771.5670
+Iteration 500: energy = 1771.4233
+Iteration 510: energy = 1771.4139
+Iteration 520: energy = 1771.0856
+Iteration 530: energy = 1770.8359
+Iteration 540: energy = 1770.7068
+Iteration 550: energy = 1770.5503
+Iteration 560: energy = 1770.3722
+Iteration 570: energy = 1770.3711
+Iteration 580: energy = 1770.3684
+Iteration 590: energy = 1770.0796
+Initial geodesic lengths: [tensor(43.2823, device='cuda:0')]
+Optimized geodesic lengths: [tensor(36.6833, device='cuda:0')]
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@hpc.dtu.dk>
+Subject: Job 24553417: <ensemble_3_v5> in cluster <dcc> Done
+
+Job <ensemble_3_v5> was submitted from host <n-62-12-19> by user <s185927> in cluster <dcc> at Tue Apr  1 14:25:47 2025
+Job was executed on host(s) <4*n-62-11-15>, in queue <gpuv100>, as user <s185927> in cluster <dcc> at Tue Apr  1 14:37:34 2025
+</zhome/e3/3/139772> was used as the home directory.
+</zhome/e3/3/139772/Desktop/AML/AML/github-project-2/AML-Project-2/src> was used as the working directory.
+Started at Tue Apr  1 14:37:34 2025
+Terminated at Tue Apr  1 14:39:30 2025
+Results reported at Tue Apr  1 14:39:30 2025
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/bin/bash
+#BSUB -J ensemble_3_v5
+#BSUB -q gpuv100
+#BSUB -n 4
+#BSUB -gpu "num=1:mode=exclusive_process"
+#BSUB -W 5:00
+#BSUB -R "rusage[mem=5GB]"
+#BSUB -u lassesofus@gmail.com
+#BSUB -o %J.out
+#BSUB -e %J.err
+
+module load cuda/11.8
+
+source /zhome/e3/3/139772/Desktop/AML/aml_new/bin/activate
+
+#python ensemble_vae.py --mode train --device cuda --experiment-folder ../experiment/ensemble_3_v6 --num-decoders 3 --num-t 50 --num-curves 25
+python ensemble_vae.py --mode geodesics --device cuda --experiment-folder ../experiment/ensemble_3_v5 --num-decoders 3 --num-t 50 --num-curves 1
+------------------------------------------------------------
+
+Successfully completed.
+
+Resource usage summary:
+
+    CPU time :                                   113.50 sec.
+    Max Memory :                                 605 MB
+    Average Memory :                             605.00 MB
+    Total Requested Memory :                     20480.00 MB
+    Delta Memory :                               19875.00 MB
+    Max Swap :                                   -
+    Max Processes :                              4
+    Max Threads :                                9
+    Run time :                                   116 sec.
+    Turnaround time :                            823 sec.
+
+The output (if any) is above this job summary.
+
+
+
+PS:
+
+Read file <24553417.err> for stderr output of this job.
+

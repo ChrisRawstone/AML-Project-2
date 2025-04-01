@@ -1,0 +1,102 @@
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = ../experiment/ensemble_3_v4
+latent_dim = 2
+mode = geodesics
+num_curves = 1
+num_decoders = 3
+num_reruns = 10
+num_t = 50
+samples = samples.png
+Iteration 10: energy = 3770.3096
+Iteration 20: energy = 3691.7671
+Iteration 30: energy = 3611.5195
+Iteration 40: energy = 3487.8447
+Iteration 50: energy = 3467.1956
+Iteration 60: energy = 3432.0977
+Iteration 70: energy = 3417.7300
+Iteration 80: energy = 3402.8586
+Iteration 90: energy = 3381.3667
+Iteration 100: energy = 3377.2476
+Iteration 110: energy = 3369.9224
+Iteration 120: energy = 3367.7395
+Iteration 130: energy = 3367.2043
+Iteration 140: energy = 3365.4331
+Iteration 150: energy = 3364.0396
+Iteration 160: energy = 3362.5298
+Iteration 170: energy = 3361.8633
+Iteration 180: energy = 3361.3513
+Iteration 190: energy = 3360.5640
+Iteration 200: energy = 3360.0120
+Iteration 210: energy = 3359.8362
+Iteration 220: energy = 3359.5112
+Iteration 230: energy = 3359.2908
+Iteration 240: energy = 3358.9729
+Iteration 250: energy = 3358.7905
+Iteration 260: energy = 3358.7600
+Iteration 270: energy = 3358.1890
+Iteration 280: energy = 3357.7034
+Iteration 290: energy = 3357.6187
+Initial geodesic lengths: [tensor(57.2171, device='cuda:0')]
+Optimized geodesic lengths: [tensor(53.1937, device='cuda:0')]
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@hpc.dtu.dk>
+Subject: Job 24553411: <ensemble_3_v4> in cluster <dcc> Done
+
+Job <ensemble_3_v4> was submitted from host <n-62-12-19> by user <s185927> in cluster <dcc> at Tue Apr  1 14:25:38 2025
+Job was executed on host(s) <4*n-62-11-15>, in queue <gpuv100>, as user <s185927> in cluster <dcc> at Tue Apr  1 14:36:27 2025
+</zhome/e3/3/139772> was used as the home directory.
+</zhome/e3/3/139772/Desktop/AML/AML/github-project-2/AML-Project-2/src> was used as the working directory.
+Started at Tue Apr  1 14:36:27 2025
+Terminated at Tue Apr  1 14:37:32 2025
+Results reported at Tue Apr  1 14:37:32 2025
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/bin/bash
+#BSUB -J ensemble_3_v4
+#BSUB -q gpuv100
+#BSUB -n 4
+#BSUB -gpu "num=1:mode=exclusive_process"
+#BSUB -W 5:00
+#BSUB -R "rusage[mem=5GB]"
+#BSUB -u lassesofus@gmail.com
+#BSUB -o %J.out
+#BSUB -e %J.err
+
+module load cuda/11.8
+
+source /zhome/e3/3/139772/Desktop/AML/aml_new/bin/activate
+
+#python ensemble_vae.py --mode train --device cuda --experiment-folder ../experiment/ensemble_3_v6 --num-decoders 3 --num-t 50 --num-curves 25
+python ensemble_vae.py --mode geodesics --device cuda --experiment-folder ../experiment/ensemble_3_v4 --num-decoders 3 --num-t 50 --num-curves 1
+------------------------------------------------------------
+
+Successfully completed.
+
+Resource usage summary:
+
+    CPU time :                                   61.71 sec.
+    Max Memory :                                 603 MB
+    Average Memory :                             603.00 MB
+    Total Requested Memory :                     20480.00 MB
+    Delta Memory :                               19877.00 MB
+    Max Swap :                                   -
+    Max Processes :                              4
+    Max Threads :                                9
+    Run time :                                   65 sec.
+    Turnaround time :                            714 sec.
+
+The output (if any) is above this job summary.
+
+
+
+PS:
+
+Read file <24553411.err> for stderr output of this job.
+
