@@ -101,10 +101,8 @@ def plot_curve_speed(model, z_curve, ensemble=False, save_path=None):
 def plot_latent_geodesics(all_latents, all_labels, geodesics, 
                           title="Latent Variables and Geodesics", 
                           save_path="latent_geodesics.png"):
-
-
-    # Use a nice style and bigger fonts
-    #plt.style.use('seaborn-whitegrid')
+    import matplotlib.pyplot as plt
+    import matplotlib.patches as mpatches
     plt.rcParams.update({'font.size': 14})
     
     plt.figure(figsize=(8, 6))
@@ -113,20 +111,15 @@ def plot_latent_geodesics(all_latents, all_labels, geodesics,
     scatter = plt.scatter(all_latents[:, 0], all_latents[:, 1],
                           c=all_labels, cmap='tab10', alpha=0.8, s=40)
     
-    # Plot geodesics
-    for i, (initial, final) in enumerate(geodesics):
-        # Ensure the curves are on CPU
-        initial = initial.cpu() if initial.is_cuda else initial
+    # Plot only the final optimized geodesic curves.
+    for i, (_, final) in enumerate(geodesics):
         final = final.cpu() if final.is_cuda else final
-
         if i == 0:
-            plt.plot(initial[:, 0], initial[:, 1], color='blue', linestyle='-', lw=2, label="Initial Curve")
             plt.plot(final[:, 0], final[:, 1], color='red', linestyle='-', lw=2, label="Optimized Curve")
         else:
-            plt.plot(initial[:, 0], initial[:, 1], color='blue', linestyle='-', lw=2)
             plt.plot(final[:, 0], final[:, 1], color='red', linestyle='-', lw=2)
     
-    # Create legend patches for classes
+    # Create legend patches for classes.
     unique_labels = sorted(torch.unique(all_labels).tolist())
     class_handles = []
     for label in unique_labels:
@@ -134,7 +127,7 @@ def plot_latent_geodesics(all_latents, all_labels, geodesics,
         patch = mpatches.Patch(color=color, label=f"Class {label}")
         class_handles.append(patch)
     
-    # Merge geodesic and class legend entries
+    # Merge geodesic and class legend entries.
     handles, labels = plt.gca().get_legend_handles_labels()
     handles.extend(class_handles)
     labels.extend([f"Class {label}" for label in unique_labels])
