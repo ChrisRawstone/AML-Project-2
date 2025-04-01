@@ -29,42 +29,63 @@ import torch
 
 def plot_curve_speed(model, z_curve, ensemble=False, save_path=None):
     """
-    Computes and plots the speed (Euclidean distance between consecutive decoded outputs)
+    Computes and plots the speed (expected Euclidean distance between consecutive decoded outputs)
     along a latent curve.
-
+    
+    For ensemble mode:
+      - For each latent point, decodes using all decoders and flattens the outputs.
+      - For each segment (between consecutive latent points), computes the difference between every
+        pair of decoder outputs (one from each latent point), then averages their L2 norms.
+      
+    For single-decoder mode, it computes speeds as before.
+    
     Parameters:
-        model: VAE model (or EnsembleVAE) used to decode latent codes.
-        z_curve (Tensor): Latent curve of shape (S+1, latent_dim).
-        ensemble (bool): If True, use ensemble averaging over decoders.
-        save_path (str, optional): If provided, save the plot to this path.
-
+        model: VAE model or EnsembleVAE.
+               For ensemble, model.decoders is a list of decoders.
+        z_curve (Tensor): Tensor of shape (S+1, latent_dim) representing the latent curve.
+        ensemble (bool): If True, computes expected speeds over all decoder pairs.
+        save_path (str, optional): If provided, saves the plot to this path.
+        
     Returns:
-        speeds (Tensor): A tensor containing the speed (distance) for each segment.
+        speeds (Tensor): A tensor of shape (S,) with the computed speed for each segment.
     """
-        # Ensure z_curve is a tensor.
+    # Ensure z_curve is a torch.Tensor.
     if not isinstance(z_curve, torch.Tensor):
         device = next(model.parameters()).device
         z_curve = torch.from_numpy(z_curve).to(device)
-
+    
     with torch.no_grad():
         if ensemble:
-            decoded_points = []
-            # For each latent point, decode using all decoders and average the outputs.
+            # Precompute decoded outputs for each latent point.
+            # For each z, compute outputs from all decoders; shape: (M, D)
+            all_outputs = []
             for z in z_curve:
                 outputs = [decoder(z.unsqueeze(0)).mean for decoder in model.decoders]
-                avg_output = torch.stack(outputs, dim=0).mean(dim=0)  # shape: (1, channels, height, width)
-                decoded_points.append(avg_output.squeeze(0))
-            decoded = torch.stack(decoded_points)  # shape: (S+1, channels, height, width)
+                outputs = torch.stack(outputs, dim=0).view(len(model.decoders), -1)
+                all_outputs.append(outputs)
+            # Stack outputs: shape (S+1, M, D)
+            all_outputs = torch.stack(all_outputs, dim=0)
+            
+            speeds = []
+            S = z_curve.shape[0] - 1  # number of segments
+            for i in range(S):
+                outputs_i = all_outputs[i]     # shape (M, D)
+                outputs_i1 = all_outputs[i+1]    # shape (M, D)
+                # Compute differences for every decoder pair: shape (M, M, D)
+                diffs = outputs_i.unsqueeze(1) - outputs_i1.unsqueeze(0)
+                # Compute L2 norm for each pair: shape (M, M)
+                norms = torch.norm(diffs, p=2, dim=2)
+                # Average over all M^2 pairs gives the expected speed for the segment.
+                segment_speed = norms.mean()
+                speeds.append(segment_speed)
+            speeds = torch.stack(speeds)  # shape (S,)
         else:
-            decoded = model.decoder(z_curve).mean  # shape: (S+1, channels, height, width)
-
-    # Flatten each decoded output.
-    decoded_flat = decoded.view(decoded.size(0), -1)
-    # Compute differences between consecutive decoded outputs.
-    diffs = decoded_flat[1:] - decoded_flat[:-1]
-    # Compute Euclidean (L2) norm for each segment.
-    speeds = torch.norm(diffs, p=2, dim=1)
-
+            # Single decoder: decode and compute speeds as before.
+            decoded = model.decoder(z_curve).mean
+            decoded_flat = decoded.view(decoded.size(0), -1)
+            diffs = decoded_flat[1:] - decoded_flat[:-1]
+            speeds = torch.norm(diffs, p=2, dim=1)
+    
     # Plot speeds along the curve.
     plt.figure(figsize=(8, 4))
     plt.plot(speeds.cpu().numpy(), marker='o', linestyle='-', color='blue')
@@ -129,30 +150,38 @@ def plot_latent_geodesics(all_latents, all_labels, geodesics,
 def plot_curve_reconstructions(model, z_curve, ensemble, title="Reconstruction", save_path=None):
     """
     Decode a series of latent codes along a curve and plot the reconstructed images in a row.
-
+    
+    For ensemble mode, each latent point is decoded using all decoders and the outputs
+    are averaged to yield the model-average reconstruction.
+    
     Parameters:
-        model: VAE model with .decoder(...) returning a distribution with a 'mean'.
-        z_curve: Tensor of shape (S+1, latent_dim).
-        title: Title of the plot.
-        save_path: Optional path to save the figure.
+        model: VAE model (or EnsembleVAE) where:
+               - For single decoder, model.decoder returns a distribution with a 'mean'.
+               - For ensemble, model.decoders is a list of decoders.
+        z_curve (Tensor): Latent curve of shape (S+1, latent_dim).
+        ensemble (bool): If True, use ensemble averaging over decoders.
+        title (str): Title of the plot.
+        save_path (str, optional): If provided, save the plot to this path.
     """
     model.eval()
     with torch.no_grad():
-        # Decode all latent codes in the curve at once.
         if ensemble:
-            # Sample a decoder from the ensemble
-            model = random.choice(model.decoders)
-            decoded = model(z_curve).mean
+            decoded_points = []
+            # For each latent point, decode using all decoders and average the outputs.
+            for z in z_curve:
+                outputs = [decoder(z.unsqueeze(0)).mean for decoder in model.decoders]
+                avg_output = torch.stack(outputs, dim=0).mean(dim=0)  # shape: (1, channels, height, width)
+                decoded_points.append(avg_output.squeeze(0))
+            decoded = torch.stack(decoded_points)  # shape: (S+1, channels, height, width)
         else:
-            decoded = model.decoder(z_curve).mean  # Expected shape: (S+1, channels, height, width)
-    decoded = decoded.cpu()
+            decoded = model.decoder(z_curve).mean  # shape: (S+1, channels, height, width)
     
+    decoded = decoded.cpu()
     num_points = decoded.shape[0]
     fig, axes = plt.subplots(1, num_points, figsize=(num_points * 2, 2))
     if num_points == 1:
         axes = [axes]
     for i, ax in enumerate(axes):
-        # Squeeze to remove single-channel dimensions if needed.
         img = decoded[i].squeeze()
         ax.imshow(img, cmap="gray")
         ax.axis("off")
@@ -167,31 +196,51 @@ def compute_curve_length(model, z_curve, ensemble=False):
     Computes the approximate length of a curve in observation space.
     
     Parameters:
-        model: VAE model with .decoder(...) returning a distribution with a 'mean'.
+        model: VAE model (or EnsembleVAE) where:
+               - For a single decoder, model.decoder returns a distribution with a 'mean'.
+               - For ensembles, model.decoders is a list of decoders.
         z_curve (Tensor): A tensor of shape (S+1, latent_dim) representing the curve in latent space.
+        ensemble (bool): If True, compute the expected curve length over all decoder pairs.
         
     Returns:
-        total_length (float): The sum of Euclidean distances between consecutive decoded outputs.
+        total_length (float): The expected sum of Euclidean distances between consecutive decoded outputs.
     """
+    import torch
+
     with torch.no_grad():
         if ensemble:
-            decoded_points = []
-            # For each latent point, decode with all decoders and average the outputs.
+            # Precompute decoded outputs for each latent point.
+            # For each latent point, obtain outputs from each decoder, and flatten them.
+            all_outputs = []
             for z in z_curve:
                 outputs = [decoder(z.unsqueeze(0)).mean for decoder in model.decoders]
-                avg_output = torch.stack(outputs, dim=0).mean(dim=0)  # shape: (1, channels, height, width)
-                decoded_points.append(avg_output.squeeze(0))
-            decoded = torch.stack(decoded_points)  # shape: (S+1, channels, height, width)
+                # Each output: shape (1, channels, height, width); flatten to (1, D)
+                outputs = torch.stack(outputs, dim=0).view(len(model.decoders), -1)  # shape: (M, D)
+                all_outputs.append(outputs)
+            # Stack all decoded outputs: shape (S+1, M, D)
+            all_outputs = torch.stack(all_outputs, dim=0)
+            
+            total_length = 0.0
+            S = z_curve.shape[0] - 1  # number of segments
+            # For each segment, compute the L2 distance for every decoder pair and average.
+            for i in range(S):
+                outputs_i = all_outputs[i]   # shape: (M, D)
+                outputs_i1 = all_outputs[i+1]  # shape: (M, D)
+                # Expand dims to broadcast: shape becomes (M, M, D)
+                diffs = outputs_i.unsqueeze(1) - outputs_i1.unsqueeze(0)
+                # Compute L2 norm for each pair: shape (M, M)
+                norms = torch.norm(diffs, p=2, dim=2)
+                # Average over all decoder pairs for this segment.
+                segment_length = norms.mean()
+                total_length += segment_length
         else:
+            # Single-decoder case: decode using model.decoder
             decoded = model.decoder(z_curve).mean  # shape: (S+1, channels, height, width)
+            decoded_flat = decoded.view(decoded.size(0), -1)
+            diffs = decoded_flat[1:] - decoded_flat[:-1]
+            segment_lengths = torch.norm(diffs, p=2, dim=1)
+            total_length = segment_lengths.sum().item()
     
-    # Flatten each decoded output to compute distances in the observation space.
-    decoded_flat = decoded.view(decoded.size(0), -1)
-    # Compute the differences between consecutive decoded outputs.
-    diffs = decoded_flat[1:] - decoded_flat[:-1]
-    # Compute the Euclidean (L2) norm for each segment.
-    segment_lengths = torch.norm(diffs, p=2, dim=1)
-    total_length = segment_lengths.sum().item()
     return total_length
 
 def compute_energy(model, z_curve):
@@ -210,61 +259,25 @@ def compute_energy(model, z_curve):
     energy = (diff ** 2).view(diff.size(0), -1).sum() / dt
     return energy
 
-def compute_model_average_energy(model, z_curve, num_samples=20, decoder_choices=None):
-    """
-    Compute the model-average curve energy via Monte Carlo approximation.
-    
-    Parameters:
-        model: EnsembleVAE with an ensemble of decoders.
-        z_curve (Tensor): Curve in latent space of shape (S+1, latent_dim).
-        num_samples (int): Number of Monte Carlo samples per curve segment.
-        
-    Returns:
-        energy (Tensor): Scalar energy of the curve.
-    """
-    total_energy = 0.0
-    S = z_curve.shape[0] - 1  # Number of segments for the curve.
+def compute_model_average_energy(model, z_curve):
 
-    # If no fixed choices provided, sample them once.
-    if decoder_choices is None:
-        decoder_choices = []
-        # Choose random decoders for each summand in Monte Carlo approximation of curve energy.
-        for i in range(num_samples):
-            choices = [ (random.choice(model.decoders), random.choice(model.decoders))
-                        for _ in range(num_samples) ]
-            decoder_choices.append(choices)
-
-    # Use the fixed choices to compute the energy.
-    for i in range(S):
-        segment_energy_samples = []
-        for dec_l, dec_k in decoder_choices[i]: 
-            f_l = dec_l(z_curve[i].unsqueeze(0)).mean  # shape: (1, ...)
-            f_k = dec_k(z_curve[i+1].unsqueeze(0)).mean
-            diff = f_l - f_k
-            segment_energy_samples.append(diff.pow(2).view(-1).sum())
-        total_energy += torch.stack(segment_energy_samples).mean()
-    return total_energy, decoder_choices
-
-def compute_model_average_energy_vectorized(model, z_curve, num_samples=50, decoder_choices=None):
     """
-    Compute the model-average curve energy via Monte Carlo sampling in a vectorized fashion.
+    Compute the model-average curve energy by enumerating *all* decoder pairs,
+    rather than sampling. This is feasible for a small number of decoders (e.g., M <= 3).
     
     Parameters:
         model: EnsembleVAE with an ensemble of decoders.
         z_curve (Tensor): Latent curve of shape (S+1, latent_dim).
-        num_samples (int): Number of Monte Carlo samples per segment.
-        decoder_choices (list, optional): Cached decoder index pairs per segment.
-            If provided, it should be a list of length S, where each element is a tuple (l_indices, k_indices).
         
     Returns:
         total_energy (Tensor): Scalar energy of the curve.
-        decoder_choices (list or None): If no decoder_choices were provided, returns the newly sampled ones;
-                                         otherwise, returns None.
     """
-    S = z_curve.shape[0] - 1  # Number of curve segments
+    S = z_curve.shape[0] - 1  # Number of segments
     M = len(model.decoders)   # Number of decoders
     
-    # Precompute decoded outputs for all latent points.
+    # Precompute decoded outputs for all latent points:
+    # all_outputs[i] will be shape (M, D), 
+    # with D = flattened dimensionality of decoder outputs.
     all_outputs = []
     for z in z_curve:
         outputs = [decoder(z.unsqueeze(0)).mean for decoder in model.decoders]
@@ -273,35 +286,36 @@ def compute_model_average_energy_vectorized(model, z_curve, num_samples=50, deco
     all_outputs = torch.stack(all_outputs, dim=0)  # shape: (S+1, M, D)
     
     total_energy = 0.0
-    local_decoder_choices = [] if decoder_choices is None else decoder_choices
     
-    # For each segment, sample num_samples pairs of decoder indices and compute energy.
     for i in range(S):
-        outputs_i = all_outputs[i]   # shape: (M, D)
-        outputs_i1 = all_outputs[i+1]  # shape: (M, D)
-        if decoder_choices is None:
-            l_indices = torch.randint(0, M, (num_samples,), device=z_curve.device)
-            k_indices = torch.randint(0, M, (num_samples,), device=z_curve.device)
-            local_decoder_choices.append((l_indices, k_indices))
-        else:
-            l_indices, k_indices = decoder_choices[i]
-        f_l = outputs_i[l_indices]   # shape: (num_samples, D)
-        f_k = outputs_i1[k_indices]  # shape: (num_samples, D)
-        diff = f_l - f_k
-        segment_energy = diff.pow(2).sum(dim=1).mean()
+        # outputs_i: shape (M, D)
+        # outputs_i1: shape (M, D)
+        outputs_i = all_outputs[i]
+        outputs_i1 = all_outputs[i + 1]
+        
+        # Expand dimensions to broadcast over all pairs (l, k).
+        # diffs will have shape (M, M, D).
+        diffs = outputs_i.unsqueeze(1) - outputs_i1.unsqueeze(0)
+        
+        # Sum of squared differences along the D dimension => shape (M, M).
+        squared_diffs = diffs.pow(2).sum(dim=2)
+        
+        # Average over all M^2 pairs => scalar.
+        segment_energy = squared_diffs.mean() 
+
         total_energy += segment_energy
 
-    if decoder_choices is None:
-        return total_energy, local_decoder_choices
-    else:
-        return total_energy, None
+    
+    dt = 1.0 / (S)   
+    total_energy /= dt 
+    return total_energy
 
 def compute_geodesic(
     model,           # VAE model with .decoder(...) -> distribution
     z_start,         # Tensor of shape (latent_dim,)  -- endpoint A
     z_end,           # Tensor of shape (latent_dim,)  -- endpoint B
     num_segments=20, # S: total segments so there are S+1 points
-    lr=0.01,
+    lr=0.001,
     max_iter=1000,   # total LBFGS iterations
     ensemble=False   # Use ensemble energy
 ):
@@ -344,14 +358,7 @@ def compute_geodesic(
         z_vars = torch.cat([z_start.unsqueeze(0), z_interior, z_end.unsqueeze(0)], dim=0)
         
         if ensemble:
-            # On the first call of this outer iteration, sample new decoder choices.
-            if counter[0] == 1:
-                energy, decoder_choices = compute_model_average_energy_vectorized(model, z_vars, num_samples=50)
-                cache["decoder_choices"] = decoder_choices  # Cache them.
-                print("Decoder choices sampled.")
-            else:
-                # For subsequent inner evaluations in this outer iteration, reuse cached choices.
-                energy, _ = compute_model_average_energy_vectorized(model, z_vars, num_samples=50, decoder_choices=cache["decoder_choices"])
+            energy = compute_model_average_energy(model, z_vars)
         else:
             energy = compute_energy(model, z_vars)
 
@@ -918,13 +925,15 @@ if __name__ == "__main__":
         geodesics = []
         latent_pairs = []
 
-        # Index for class 0 and class 1 in the test set
-        class_0_idx = all_labels == 0
-        class_1_idx = all_labels == 1
+        if args.num_curves == 1:
+            # Select a pair with one from each class
+            # Index for class 0 and class 1 in the test set
+            class_0_idx = all_labels == 0
+            class_1_idx = all_labels == 1
 
-        # Choose 1 pair of latent codes from each class
-        indices = [(class_0_idx.nonzero(as_tuple=True)[0][0], class_1_idx.nonzero(as_tuple=True)[
-            0][0])]
+            # Choose 1 pair of latent codes from each class
+            indices = [(class_0_idx.nonzero(as_tuple=True)[0][0], class_1_idx.nonzero(as_tuple=True)[
+                0][0])]
 
         # For each chosen latent pair:
         for pair in tqdm(indices):
@@ -932,10 +941,10 @@ if __name__ == "__main__":
             latent_pairs.append((z0.cpu().numpy(), z1.cpu().numpy()))
             if ensemble:
                 initial_curve, final_curve = compute_geodesic(
-                    model, z0, z1, ensemble=True
+                    model, z0, z1, num_segments=args.num_t, ensemble=True
                 )
             else:
-                initial_curve, final_curve = compute_geodesic(model, z0, z1)
+                initial_curve, final_curve = compute_geodesic(model, z0, z1, num_segments=args.num_t)
             # Stack both curves into a tuple for later plotting.
             geodesics.append((initial_curve, final_curve))
 
