@@ -940,20 +940,7 @@ if __name__ == "__main__":
         geodesics = []
         latent_pairs = []
 
-<<<<<<< Updated upstream
         
-=======
-        if args.num_curves == 1:
-            # Select a pair with one from each class
-            # Index for class 0 and class 1 in the test set
-            class_0_idx = all_labels == 0
-            class_1_idx = all_labels == 1
-
-            # Choose 1 pair of latent codes from each class
-            indices = [(class_0_idx.nonzero(as_tuple=True)[0][0], class_1_idx.nonzero(as_tuple=True)[
-                0][0])]
-
->>>>>>> Stashed changes
         # For each chosen latent pair:
         for pair in tqdm(indices):
             z0, z1 = all_latents[pair[0]].to(device), all_latents[pair[1]].to(device)
