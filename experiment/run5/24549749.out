@@ -1,0 +1,123 @@
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = ../experiment/run5
+latent_dim = 2
+mode = geodesics
+num_curves = 1
+num_decoders = 1
+num_reruns = 10
+num_t = 50
+samples = samples.png
+Iteration 10: energy = 1131.2583
+Iteration 20: energy = 1111.3936
+Iteration 30: energy = 1096.9795
+Iteration 40: energy = 1086.0867
+Iteration 50: energy = 1080.5549
+Iteration 60: energy = 1070.3838
+Iteration 70: energy = 1063.1403
+Iteration 80: energy = 1055.3395
+Iteration 90: energy = 1047.3074
+Iteration 100: energy = 1043.8286
+Iteration 110: energy = 1039.7964
+Iteration 120: energy = 1037.0896
+Iteration 130: energy = 1034.1381
+Iteration 140: energy = 1032.4679
+Iteration 150: energy = 1026.0709
+Iteration 160: energy = 1024.4205
+Iteration 170: energy = 1022.0981
+Iteration 180: energy = 1020.3266
+Iteration 190: energy = 1018.1208
+Iteration 200: energy = 1016.4368
+Iteration 210: energy = 1015.8929
+Iteration 220: energy = 1015.0303
+Iteration 230: energy = 1013.9349
+Iteration 240: energy = 1012.5136
+Iteration 250: energy = 1011.2610
+Iteration 260: energy = 1010.3687
+Iteration 270: energy = 1007.8121
+Iteration 280: energy = 1007.1768
+Iteration 290: energy = 1006.4762
+Iteration 300: energy = 1006.2817
+Iteration 310: energy = 1005.6515
+Iteration 320: energy = 1005.2252
+Iteration 330: energy = 1004.6827
+Iteration 340: energy = 1004.3206
+Iteration 350: energy = 1003.9323
+Iteration 360: energy = 1003.6302
+Iteration 370: energy = 1003.4309
+Iteration 380: energy = 1003.2051
+Iteration 390: energy = 1002.9707
+Iteration 400: energy = 1002.7832
+Iteration 410: energy = 1002.6794
+Iteration 420: energy = 1002.5014
+Iteration 430: energy = 1002.4330
+Iteration 440: energy = 1002.3081
+Iteration 450: energy = 1002.2909
+Iteration 460: energy = 1002.2338
+Iteration 470: energy = 1002.2301
+Iteration 480: energy = 1002.1754
+Iteration 490: energy = 1002.1531
+Iteration 500: energy = 1002.1433
+Initial geodesic lengths: [32.657691955566406]
+Optimized geodesic lengths: [31.65522575378418]
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@hpc.dtu.dk>
+Subject: Job 24549749: <geodesics_run5> in cluster <dcc> Done
+
+Job <geodesics_run5> was submitted from host <n-62-12-19> by user <s185927> in cluster <dcc> at Tue Apr  1 10:29:14 2025
+Job was executed on host(s) <4*n-62-11-14>, in queue <gpuv100>, as user <s185927> in cluster <dcc> at Tue Apr  1 10:34:26 2025
+</zhome/e3/3/139772> was used as the home directory.
+</zhome/e3/3/139772/Desktop/AML/AML/github-project-2/AML-Project-2/src> was used as the working directory.
+Started at Tue Apr  1 10:34:26 2025
+Terminated at Tue Apr  1 10:34:43 2025
+Results reported at Tue Apr  1 10:34:43 2025
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/bin/bash
+#BSUB -J geodesics_run5
+#BSUB -q gpuv100
+#BSUB -n 4
+#BSUB -gpu "num=1:mode=exclusive_process"
+#BSUB -W 5:00
+#BSUB -R "rusage[mem=5GB]"
+#BSUB -u lassesofus@gmail.com
+#BSUB -o %J.out
+#BSUB -e %J.err
+
+module load cuda/11.8
+
+source /zhome/e3/3/139772/Desktop/AML/aml_new/bin/activate
+
+#python ensemble_vae.py --mode train --device cuda --experiment-folder ../experiment/ensemble_3_v2 --num-decoders 3 --num-t 50
+python ensemble_vae.py --mode geodesics --device cuda --experiment-folder ../experiment/run5 --num-decoders 1 --num-t 50 --num-curves 1
+------------------------------------------------------------
+
+Successfully completed.
+
+Resource usage summary:
+
+    CPU time :                                   13.81 sec.
+    Max Memory :                                 776 MB
+    Average Memory :                             776.00 MB
+    Total Requested Memory :                     20480.00 MB
+    Delta Memory :                               19704.00 MB
+    Max Swap :                                   -
+    Max Processes :                              4
+    Max Threads :                                9
+    Run time :                                   18 sec.
+    Turnaround time :                            329 sec.
+
+The output (if any) is above this job summary.
+
+
+
+PS:
+
+Read file <24549749.err> for stderr output of this job.
+
