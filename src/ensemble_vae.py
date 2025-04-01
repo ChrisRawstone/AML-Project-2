@@ -297,11 +297,7 @@ def compute_model_average_energy(model, z_curve):
     dt = 1.0 / (S)   
     total_energy /= dt 
     return total_energy
-<<<<<<< Updated upstream
 
-
-=======
->>>>>>> Stashed changes
 
 def compute_geodesic(
     model,           # VAE model with .decoder(...) -> distribution
