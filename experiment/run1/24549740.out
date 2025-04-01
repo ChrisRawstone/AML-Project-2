@@ -1,0 +1,128 @@
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = ../experiment/run1
+latent_dim = 2
+mode = geodesics
+num_curves = 1
+num_decoders = 1
+num_reruns = 10
+num_t = 50
+samples = samples.png
+Iteration 10: energy = 1159.0895
+Iteration 20: energy = 1145.2084
+Iteration 30: energy = 1134.8625
+Iteration 40: energy = 1115.9224
+Iteration 50: energy = 1107.2201
+Iteration 60: energy = 1100.0323
+Iteration 70: energy = 1090.6605
+Iteration 80: energy = 1084.5914
+Iteration 90: energy = 1079.5341
+Iteration 100: energy = 1073.9308
+Iteration 110: energy = 1069.2970
+Iteration 120: energy = 1067.0836
+Iteration 130: energy = 1064.2166
+Iteration 140: energy = 1062.6665
+Iteration 150: energy = 1060.8588
+Iteration 160: energy = 1059.0660
+Iteration 170: energy = 1057.5817
+Iteration 180: energy = 1056.9149
+Iteration 190: energy = 1056.5331
+Iteration 200: energy = 1055.8840
+Iteration 210: energy = 1055.2139
+Iteration 220: energy = 1054.6420
+Iteration 230: energy = 1053.8264
+Iteration 240: energy = 1053.3800
+Iteration 250: energy = 1052.5837
+Iteration 260: energy = 1052.1689
+Iteration 270: energy = 1051.3965
+Iteration 280: energy = 1050.6503
+Iteration 290: energy = 1049.8682
+Iteration 300: energy = 1048.9949
+Iteration 310: energy = 1048.4434
+Iteration 320: energy = 1047.1769
+Iteration 330: energy = 1046.7971
+Iteration 340: energy = 1046.1234
+Iteration 350: energy = 1045.9017
+Iteration 360: energy = 1045.2979
+Iteration 370: energy = 1045.2078
+Iteration 380: energy = 1044.6191
+Iteration 390: energy = 1044.3817
+Iteration 400: energy = 1044.0709
+Iteration 410: energy = 1043.8942
+Iteration 420: energy = 1043.8612
+Iteration 430: energy = 1043.7526
+Iteration 440: energy = 1043.5850
+Iteration 450: energy = 1043.5278
+Iteration 460: energy = 1043.2966
+Iteration 470: energy = 1042.9885
+Iteration 480: energy = 1042.8513
+Iteration 490: energy = 1042.2264
+Iteration 500: energy = 1041.9285
+Iteration 510: energy = 1041.3448
+Iteration 520: energy = 1041.0194
+Iteration 530: energy = 1040.9261
+Iteration 540: energy = 1040.8434
+Iteration 550: energy = 1040.7648
+Initial geodesic lengths: [33.25819396972656]
+Optimized geodesic lengths: [32.247154235839844]
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@hpc.dtu.dk>
+Subject: Job 24549740: <geodesics_run1> in cluster <dcc> Done
+
+Job <geodesics_run1> was submitted from host <n-62-12-19> by user <s185927> in cluster <dcc> at Tue Apr  1 10:27:15 2025
+Job was executed on host(s) <4*n-62-11-14>, in queue <gpuv100>, as user <s185927> in cluster <dcc> at Tue Apr  1 10:33:11 2025
+</zhome/e3/3/139772> was used as the home directory.
+</zhome/e3/3/139772/Desktop/AML/AML/github-project-2/AML-Project-2/src> was used as the working directory.
+Started at Tue Apr  1 10:33:11 2025
+Terminated at Tue Apr  1 10:33:31 2025
+Results reported at Tue Apr  1 10:33:31 2025
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/bin/bash
+#BSUB -J geodesics_run1
+#BSUB -q gpuv100
+#BSUB -n 4
+#BSUB -gpu "num=1:mode=exclusive_process"
+#BSUB -W 5:00
+#BSUB -R "rusage[mem=5GB]"
+#BSUB -u lassesofus@gmail.com
+#BSUB -o %J.out
+#BSUB -e %J.err
+
+module load cuda/11.8
+
+source /zhome/e3/3/139772/Desktop/AML/aml_new/bin/activate
+
+#python ensemble_vae.py --mode train --device cuda --experiment-folder ../experiment/ensemble_3_v2 --num-decoders 3 --num-t 50
+python ensemble_vae.py --mode geodesics --device cuda --experiment-folder ../experiment/run1 --num-decoders 1 --num-t 50 --num-curves 1
+------------------------------------------------------------
+
+Successfully completed.
+
+Resource usage summary:
+
+    CPU time :                                   14.57 sec.
+    Max Memory :                                 637 MB
+    Average Memory :                             637.00 MB
+    Total Requested Memory :                     20480.00 MB
+    Delta Memory :                               19843.00 MB
+    Max Swap :                                   -
+    Max Processes :                              4
+    Max Threads :                                9
+    Run time :                                   22 sec.
+    Turnaround time :                            376 sec.
+
+The output (if any) is above this job summary.
+
+
+
+PS:
+
+Read file <24549740.err> for stderr output of this job.
+

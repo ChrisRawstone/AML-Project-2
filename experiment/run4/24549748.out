@@ -1,0 +1,118 @@
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = ../experiment/run4
+latent_dim = 2
+mode = geodesics
+num_curves = 1
+num_decoders = 1
+num_reruns = 10
+num_t = 50
+samples = samples.png
+Iteration 10: energy = 1119.6804
+Iteration 20: energy = 1110.5151
+Iteration 30: energy = 1103.2928
+Iteration 40: energy = 1097.4363
+Iteration 50: energy = 1087.0812
+Iteration 60: energy = 1082.2046
+Iteration 70: energy = 1079.1005
+Iteration 80: energy = 1072.1178
+Iteration 90: energy = 1067.7328
+Iteration 100: energy = 1059.4858
+Iteration 110: energy = 1057.5569
+Iteration 120: energy = 1054.9202
+Iteration 130: energy = 1052.5812
+Iteration 140: energy = 1049.5820
+Iteration 150: energy = 1047.6749
+Iteration 160: energy = 1046.7312
+Iteration 170: energy = 1045.0643
+Iteration 180: energy = 1043.9811
+Iteration 190: energy = 1040.9443
+Iteration 200: energy = 1039.6523
+Iteration 210: energy = 1037.3286
+Iteration 220: energy = 1035.5654
+Iteration 230: energy = 1033.5334
+Iteration 240: energy = 1031.3375
+Iteration 250: energy = 1030.3759
+Iteration 260: energy = 1028.9620
+Iteration 270: energy = 1028.3691
+Iteration 280: energy = 1026.5330
+Iteration 290: energy = 1026.2354
+Iteration 300: energy = 1025.8020
+Iteration 310: energy = 1025.5583
+Iteration 320: energy = 1025.3563
+Iteration 330: energy = 1025.1255
+Iteration 340: energy = 1024.9161
+Iteration 350: energy = 1024.8943
+Iteration 360: energy = 1024.8665
+Iteration 370: energy = 1024.7332
+Iteration 380: energy = 1024.5536
+Iteration 390: energy = 1024.4215
+Iteration 400: energy = 1024.4175
+Iteration 410: energy = 1024.3370
+Iteration 420: energy = 1024.1897
+Iteration 430: energy = 1024.1240
+Iteration 440: energy = 1024.0811
+Iteration 450: energy = 1024.0554
+Initial geodesic lengths: [32.76499557495117]
+Optimized geodesic lengths: [31.989517211914062]
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@hpc.dtu.dk>
+Subject: Job 24549748: <geodesics_run4> in cluster <dcc> Done
+
+Job <geodesics_run4> was submitted from host <n-62-12-19> by user <s185927> in cluster <dcc> at Tue Apr  1 10:29:03 2025
+Job was executed on host(s) <4*n-62-11-14>, in queue <gpuv100>, as user <s185927> in cluster <dcc> at Tue Apr  1 10:34:07 2025
+</zhome/e3/3/139772> was used as the home directory.
+</zhome/e3/3/139772/Desktop/AML/AML/github-project-2/AML-Project-2/src> was used as the working directory.
+Started at Tue Apr  1 10:34:07 2025
+Terminated at Tue Apr  1 10:34:24 2025
+Results reported at Tue Apr  1 10:34:24 2025
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/bin/bash
+#BSUB -J geodesics_run4
+#BSUB -q gpuv100
+#BSUB -n 4
+#BSUB -gpu "num=1:mode=exclusive_process"
+#BSUB -W 5:00
+#BSUB -R "rusage[mem=5GB]"
+#BSUB -u lassesofus@gmail.com
+#BSUB -o %J.out
+#BSUB -e %J.err
+
+module load cuda/11.8
+
+source /zhome/e3/3/139772/Desktop/AML/aml_new/bin/activate
+
+#python ensemble_vae.py --mode train --device cuda --experiment-folder ../experiment/ensemble_3_v2 --num-decoders 3 --num-t 50
+python ensemble_vae.py --mode geodesics --device cuda --experiment-folder ../experiment/run4 --num-decoders 1 --num-t 50 --num-curves 1
+------------------------------------------------------------
+
+Successfully completed.
+
+Resource usage summary:
+
+    CPU time :                                   13.63 sec.
+    Max Memory :                                 777 MB
+    Average Memory :                             777.00 MB
+    Total Requested Memory :                     20480.00 MB
+    Delta Memory :                               19703.00 MB
+    Max Swap :                                   -
+    Max Processes :                              4
+    Max Threads :                                9
+    Run time :                                   18 sec.
+    Turnaround time :                            321 sec.
+
+The output (if any) is above this job summary.
+
+
+
+PS:
+
+Read file <24549748.err> for stderr output of this job.
+

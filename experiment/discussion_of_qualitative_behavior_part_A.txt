@@ -1,0 +1,62 @@
+run 1:
+Iteration 10: energy = 1159.0895
+Iteration 550: energy = 1040.7648
+reduction: 0.102084179
+Initial geodesic lengths: [33.25819396972656]
+Optimized geodesic lengths: [32.247154235839844]
+
+run 2:
+Iteration 10: energy = 964.3519
+Iteration 420: energy = 913.6491
+reduction: 0.05257707274
+Initial geodesic lengths: [30.62473487854004]
+Optimized geodesic lengths: [30.226058959960938]
+
+run 3:
+Iteration 10: energy = 1073.4674
+Iteration 770: energy = 959.6825
+reduction: 0.10599753658
+Initial geodesic lengths: [31.73841667175293]
+Optimized geodesic lengths: [30.976511001586914]
+
+run 4:
+Iteration 10: energy = 1119.6804
+Iteration 450: energy = 1024.0554
+reduction: 0.08540383488
+Initial geodesic lengths: [32.76499557495117]
+Optimized geodesic lengths: [31.989517211914062]
+
+run 5:
+Iteration 10: energy = 1131.2583
+Iteration 500: energy = 1002.1433
+reduction: 0.11
+Initial geodesic lengths: [32.657691955566406]
+Optimized geodesic lengths: [31.65522575378418]
+
+run 6:
+Iteration 10: energy = 1181.2632
+Iteration 860: energy = 1052.5356
+reduction: 0.11
+Initial geodesic lengths: [33.5516357421875]
+Optimized geodesic lengths: [32.43569564819336]
+
+
+Compare the geodesic paths computed from the same latent endpoint pairs across multiple training runs:
+Geodesic paths are not really reliable in the 1-decoder case, sometimes bending into a cluster of points and sometimes around the same cluster of points across multiple training runs. 
+
+Smoothness of the Decoded Transitions:
+All decoded geodesics result in smooth transitions in the image space which is to be expected as they are computed with the decoder mean pullback metric which penalises abrupt changes.
+
+Energy and Length Reduction:
+The energy reduction is fairly consistent between training runs ranging from 5 to 11 percent from initial straight line to optimized geodesic. The energy is always lower for the geodesic. The curve energies consistently converge to the squared curve lengths as expected from inequality 7.14 in the DGGM book. 
+
+Speed Consistency:
+As a result, we also consistently get practically constant speed curves. 
+
+
+
+
+
+
+
+
