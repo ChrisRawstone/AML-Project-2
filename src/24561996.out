@@ -1,0 +1,113 @@
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = ../experiment/ensemble_3_v3
+latent_dim = 2
+mode = geodesics
+num_curves = 1
+num_decoders = 3
+num_reruns = 10
+num_t = 50
+samples = samples.png
+Iteration 5: energy = 57831.6602, gradient norm = 10884.416992, lr = 0.500000
+Iteration 10: energy = 50768.7734, gradient norm = 6400.717285, lr = 0.500000
+Iteration 15: energy = 47455.3789, gradient norm = 5317.946777, lr = 0.500000
+Iteration 20: energy = 46283.4844, gradient norm = 4070.159668, lr = 0.500000
+Iteration 25: energy = 45211.1445, gradient norm = 3344.076660, lr = 0.250000
+Iteration 30: energy = 43924.0039, gradient norm = 2202.789062, lr = 0.250000
+Iteration 35: energy = 44578.4453, gradient norm = 2894.195801, lr = 0.250000
+Iteration 40: energy = 43975.0078, gradient norm = 2426.532959, lr = 0.250000
+Iteration 45: energy = 43922.9219, gradient norm = 3319.191650, lr = 0.125000
+Iteration 50: energy = 43516.0039, gradient norm = 2560.822021, lr = 0.125000
+Iteration 55: energy = 43171.5742, gradient norm = 2214.927979, lr = 0.125000
+Iteration 60: energy = 43727.5039, gradient norm = 1723.739136, lr = 0.125000
+Iteration 65: energy = 43116.0508, gradient norm = 2061.777588, lr = 0.062500
+Iteration 70: energy = 43082.1641, gradient norm = 2316.350586, lr = 0.062500
+Iteration 75: energy = 43240.7070, gradient norm = 1752.695679, lr = 0.062500
+Iteration 80: energy = 43409.1445, gradient norm = 2469.636230, lr = 0.062500
+Iteration 85: energy = 42510.5508, gradient norm = 1795.173706, lr = 0.062500
+Iteration 90: energy = 43476.6914, gradient norm = 1750.526733, lr = 0.062500
+Iteration 95: energy = 43255.5195, gradient norm = 2004.766968, lr = 0.062500
+Iteration 100: energy = 43236.4062, gradient norm = 2234.151367, lr = 0.062500
+Iteration 105: energy = 43152.0312, gradient norm = 2106.966309, lr = 0.062500
+Iteration 110: energy = 43501.0703, gradient norm = 2489.659912, lr = 0.031250
+Iteration 115: energy = 43039.8906, gradient norm = 2173.175781, lr = 0.031250
+Iteration 120: energy = 43062.3672, gradient norm = 1299.477905, lr = 0.031250
+Iteration 125: energy = 43139.0547, gradient norm = 1837.475830, lr = 0.031250
+Iteration 130: energy = 42750.7734, gradient norm = 1522.403564, lr = 0.031250
+Iteration 135: energy = 42818.5430, gradient norm = 1465.918701, lr = 0.031250
+Iteration 140: energy = 43374.2617, gradient norm = 2304.724121, lr = 0.015625
+Iteration 145: energy = 43355.2812, gradient norm = 1639.271606, lr = 0.015625
+Iteration 150: energy = 42912.6016, gradient norm = 1872.540649, lr = 0.015625
+Iteration 155: energy = 42779.7188, gradient norm = 1704.923340, lr = 0.015625
+Iteration 160: energy = 43165.7422, gradient norm = 1689.614136, lr = 0.007812
+Iteration 165: energy = 43062.3984, gradient norm = 2138.373535, lr = 0.007812
+Iteration 170: energy = 43618.1133, gradient norm = 2508.609863, lr = 0.007812
+Iteration 175: energy = 42422.4102, gradient norm = 1685.795410, lr = 0.007812
+Iteration 180: energy = 43337.7070, gradient norm = 1254.653809, lr = 0.007812
+Iteration 185: energy = 43689.6992, gradient norm = 1994.659912, lr = 0.007812
+Iteration 190: energy = 43738.7812, gradient norm = 2153.428223, lr = 0.007812
+Iteration 195: energy = 42778.8984, gradient norm = 1259.166992, lr = 0.007812
+Iteration 200: energy = 42737.8984, gradient norm = 1219.432861, lr = 0.007812
+Initial geodesic lengths: [tensor(60.2754, device='cuda:0')]
+Optimized geodesic lengths: [tensor(54.3759, device='cuda:0')]
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@hpc.dtu.dk>
+Subject: Job 24561996: <ensemble_3_v3> in cluster <dcc> Done
+
+Job <ensemble_3_v3> was submitted from host <n-62-20-1> by user <s185927> in cluster <dcc> at Wed Apr  2 15:48:42 2025
+Job was executed on host(s) <4*n-62-20-11>, in queue <gpuv100>, as user <s185927> in cluster <dcc> at Wed Apr  2 16:08:11 2025
+</zhome/e3/3/139772> was used as the home directory.
+</zhome/e3/3/139772/Desktop/AML/AML/github-project-2/AML-Project-2/src> was used as the working directory.
+Started at Wed Apr  2 16:08:11 2025
+Terminated at Wed Apr  2 16:13:03 2025
+Results reported at Wed Apr  2 16:13:03 2025
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/bin/bash
+#BSUB -J ensemble_3_v3
+#BSUB -q gpuv100
+#BSUB -n 4
+#BSUB -gpu "num=1:mode=exclusive_process"
+#BSUB -W 5:00
+#BSUB -R "rusage[mem=5GB]"
+#BSUB -u lassesofus@gmail.com
+#BSUB -o %J.out
+#BSUB -e %J.err
+
+module load cuda/11.8
+
+source /zhome/e3/3/139772/Desktop/AML/aml_new/bin/activate
+
+#python ensemble_vae.py --mode train --device cuda --experiment-folder ../experiment/ensemble_3_v6 --num-decoders 3 --num-t 50 --num-curves 25
+python ensemble_vae.py --mode geodesics --device cuda --experiment-folder ../experiment/ensemble_3_v3 --num-decoders 3 --num-t 50 --num-curves 1
+------------------------------------------------------------
+
+Successfully completed.
+
+Resource usage summary:
+
+    CPU time :                                   271.18 sec.
+    Max Memory :                                 -
+    Average Memory :                             -
+    Total Requested Memory :                     20480.00 MB
+    Delta Memory :                               -
+    Max Swap :                                   -
+    Max Processes :                              -
+    Max Threads :                                -
+    Run time :                                   0 sec.
+    Turnaround time :                            1461 sec.
+
+The output (if any) is above this job summary.
+
+
+
+PS:
+
+Read file <24561996.err> for stderr output of this job.
+
