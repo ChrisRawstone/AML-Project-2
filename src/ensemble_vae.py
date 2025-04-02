@@ -9,6 +9,7 @@ from tqdm import tqdm
 from copy import deepcopy
 import os
 import math
+import numpy as np
 import matplotlib.pyplot as plt
 import pdb
 import seaborn as sns
@@ -397,48 +398,6 @@ def compute_model_average_energy_dec_mc(model, z_curve, n_samples=10):
     total_energy /= dt
     return total_energy
 
-def compute_model_average_energy_mc(model, z_curve, n_samples=10):
-    """
-    Compute the model-average curve energy via Monte Carlo sampling.
-    For each curve segment, a random pair of decoders is chosen.
-    For each latent point of the segment, n_samples are drawn (via rsample)
-    from the corresponding decoder, and the mean squared norm of the differences
-    is computed.
-
-    Parameters:
-        model: EnsembleVAE with an ensemble of decoders.
-        z_curve (Tensor): Latent curve of shape (S+1, latent_dim).
-        n_samples (int): Number of MC samples per segment.
-        
-    Returns:
-        total_energy (Tensor): Scalar energy of the curve.
-    """
-    S = z_curve.shape[0] - 1      # number of segments
-    M = len(model.decoders)       # number of decoders
-
-    total_energy = 0.0
-
-    for i in range(S):
-        # Randomly select one decoder for the starting point and one for the ending point.
-        l_idx = torch.randint(0, M, (1,), device=z_curve.device).item()
-        k_idx = torch.randint(0, M, (1,), device=z_curve.device).item()
-
-        samples_diff = []
-        for _ in range(n_samples):
-            # Sample from the chosen decoders, each sample is a new Monte Carlo draw.
-            f_l = model.decoders[l_idx](z_curve[i].unsqueeze(0)).rsample().view(-1)
-            f_k = model.decoders[k_idx](z_curve[i+1].unsqueeze(0)).rsample().view(-1)
-            diff = f_l - f_k
-            samples_diff.append(diff.pow(2).sum())
-        
-        # Average the squared differences over the MC samples.
-        segment_energy = torch.stack(samples_diff).mean()
-        total_energy += segment_energy
-
-    dt = 1.0 / S
-    total_energy /= dt
-    return total_energy
-
 def compute_geodesic_adam(
     model,           # VAE model with .decoder(...) -> distribution
     z_start,         # Tensor of shape (latent_dim,)  -- endpoint A
@@ -540,7 +499,7 @@ def compute_geodesic(
         z_vars = torch.cat([z_start.unsqueeze(0), z_interior, z_end.unsqueeze(0)], dim=0)
         
         if ensemble:
-            energy = compute_model_average_energy_mc(model, z_vars)
+            energy = compute_model_average_energy_dec_mc(model, z_vars)
         else:
             energy = compute_energy(model, z_vars)
 
@@ -1102,17 +1061,17 @@ if __name__ == "__main__":
         ensemble = False
         if args.num_decoders > 1:
             ensemble = True
-            decoders = [GaussianDecoder(new_decoder()) for _ in range(args.num_decoders)]
+            decoders = [GaussianDecoder(new_decoder(M)) for _ in range(args.num_decoders)]
             model = EnsembleVAE(
                 GaussianPrior(M),
                 decoders,
-                GaussianEncoder(new_encoder()),
+                GaussianEncoder(new_encoder(M)),
             ).to(device)
         else:
             model = VAE(
                 GaussianPrior(M),
-                GaussianDecoder(new_decoder()),
-                GaussianEncoder(new_encoder()),
+                GaussianDecoder(new_decoder(M)),
+                GaussianEncoder(new_encoder(M)),
             ).to(device)
         model.load_state_dict(torch.load(args.experiment_folder + "/model.pt"))
         model.eval()
@@ -1134,11 +1093,17 @@ if __name__ == "__main__":
         # Choose random pairs from encoded latent codes
         num_pairs = args.num_curves
         # Ensure reproducibility
+        torch.manual_seed(args.seed)
         indices = torch.randperm(all_latents.shape[0])[:2*num_pairs].reshape(num_pairs, 2)
         geodesics = []
         latent_pairs = []
 
-        
+        if num_pairs == 1:
+            # Choose a point pair from class 0 and class 1
+            idx_0 = torch.where(all_labels == 0)[0]
+            idx_1 = torch.where(all_labels == 1)[0]
+            indices = torch.tensor([[idx_0[0].item(), idx_1[0].item()]])         
+            
         # For each chosen latent pair:
         for pair in tqdm(indices):
             z0, z1 = all_latents[pair[0]].to(device), all_latents[pair[1]].to(device)

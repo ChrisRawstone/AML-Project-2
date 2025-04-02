@@ -1,6 +1,6 @@
 #!/bin/bash
 #BSUB -J batch_geodesics
-#BSUB -q gpuv100
+#BSUB -q gpua100
 #BSUB -n 4
 #BSUB -gpu "num=1:mode=exclusive_process"
 #BSUB -W 5:00
