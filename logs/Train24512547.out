@@ -1,0 +1,510 @@
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/1_decoder/run_0
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 1
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 0
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/1_decoder/run_1
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 1
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 1
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/1_decoder/run_2
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 1
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 2
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/1_decoder/run_3
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 1
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 3
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/1_decoder/run_4
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 1
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 4
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/1_decoder/run_5
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 1
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 5
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/1_decoder/run_6
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 1
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 6
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/1_decoder/run_7
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 1
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 7
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/1_decoder/run_8
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 1
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 8
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/1_decoder/run_9
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 1
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 9
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/2_decoder/run_0
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 2
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 10
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/2_decoder/run_1
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 2
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 11
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/2_decoder/run_2
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 2
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 12
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/2_decoder/run_3
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 2
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 13
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/2_decoder/run_4
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 2
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 14
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/2_decoder/run_5
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 2
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 15
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/2_decoder/run_6
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 2
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 16
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/2_decoder/run_7
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 2
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 17
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/2_decoder/run_8
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 2
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 18
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/2_decoder/run_9
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 2
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 19
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/3_decoder/run_0
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 3
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 20
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/3_decoder/run_1
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 3
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 21
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/3_decoder/run_2
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 3
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 22
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/3_decoder/run_3
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 3
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 23
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/3_decoder/run_4
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 3
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 24
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/3_decoder/run_5
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 3
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 25
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/3_decoder/run_6
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 3
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 26
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/3_decoder/run_7
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 3
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 27
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/3_decoder/run_8
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 3
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 28
+# Options
+batch_size = 32
+device = cuda
+epochs_per_decoder = 200
+experiment_folder = training_runs/3_decoder/run_9
+latent_dim = 2
+mode = train
+num_curves = 25
+num_decoders = 3
+num_reruns = 10
+num_t = 20
+num_train_data = 2048
+samples = samples.png
+seed = 29
+
+--- Training 1-decoder model, run 0, seed=0 ---
+
+
+--- Training 1-decoder model, run 1, seed=1 ---
+
+
+--- Training 1-decoder model, run 2, seed=2 ---
+
+
+--- Training 1-decoder model, run 3, seed=3 ---
+
+
+--- Training 1-decoder model, run 4, seed=4 ---
+
+
+--- Training 1-decoder model, run 5, seed=5 ---
+
+
+--- Training 1-decoder model, run 6, seed=6 ---
+
+
+--- Training 1-decoder model, run 7, seed=7 ---
+
+
+--- Training 1-decoder model, run 8, seed=8 ---
+
+
+--- Training 1-decoder model, run 9, seed=9 ---
+
+
+--- Training 2-decoder model, run 0, seed=10 ---
+
+
+--- Training 2-decoder model, run 1, seed=11 ---
+
+
+--- Training 2-decoder model, run 2, seed=12 ---
+
+
+--- Training 2-decoder model, run 3, seed=13 ---
+
+
+--- Training 2-decoder model, run 4, seed=14 ---
+
+
+--- Training 2-decoder model, run 5, seed=15 ---
+
+
+--- Training 2-decoder model, run 6, seed=16 ---
+
+
+--- Training 2-decoder model, run 7, seed=17 ---
+
+
+--- Training 2-decoder model, run 8, seed=18 ---
+
+
+--- Training 2-decoder model, run 9, seed=19 ---
+
+
+--- Training 3-decoder model, run 0, seed=20 ---
+
+
+--- Training 3-decoder model, run 1, seed=21 ---
+
+
+--- Training 3-decoder model, run 2, seed=22 ---
+
+
+--- Training 3-decoder model, run 3, seed=23 ---
+
+
+--- Training 3-decoder model, run 4, seed=24 ---
+
+
+--- Training 3-decoder model, run 5, seed=25 ---
+
+
+--- Training 3-decoder model, run 6, seed=26 ---
+
+
+--- Training 3-decoder model, run 7, seed=27 ---
+
+
+--- Training 3-decoder model, run 8, seed=28 ---
+
+
+--- Training 3-decoder model, run 9, seed=29 ---
+
